@@ -115,9 +115,9 @@
       "target": "components/footer-preview.tsx"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/preview-size.tsx",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/preview-minimap.tsx",
       "type": "registry:component",
-      "target": "components/preview-size.tsx"
+      "target": "components/preview-minimap.tsx"
     }
   ]
 }

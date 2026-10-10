@@ -6,7 +6,7 @@ import { CompareView } from "@/components/compare-view";
 import { Dropzone } from "@/components/dropzone";
 import { FooterPreview } from "@/components/footer-preview";
 import { OutputSettings } from "@/components/output-settings";
-import { PreviewSize } from "@/components/preview-size";
+import { PreviewMinimap } from "@/components/preview-minimap";
 import { StyleControls } from "@/components/style-controls";
 import { StylePicker } from "@/components/style-picker";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -116,12 +116,10 @@ export default function App() {
       </main>
 
       {/* footer real a 100% del ancho, alimentado en vivo desde el store */}
-      <div className="border-t bg-muted/40">
-        <div className="mx-auto w-full max-w-6xl px-4 py-2.5">
-          <PreviewSize />
-        </div>
-      </div>
       <FooterPreview result={result} />
+
+      {/* minimapa flotante para dimensionar el preview */}
+      <PreviewMinimap />
     </div>
   );
 }

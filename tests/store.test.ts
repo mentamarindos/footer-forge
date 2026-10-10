@@ -22,6 +22,7 @@ describe("forge store: estado inicial", () => {
     expect(s.result).toBeNull();
     expect(s.processing).toBe(false);
     expect(s.previewHeight).toBe(DEFAULT_PREVIEW_HEIGHT);
+    expect(s.previewWidth).toBeNull();
     expect(s.availableStyles.length).toBe(8);
   });
 
@@ -114,17 +115,21 @@ describe("forge store: acciones", () => {
     });
   });
 
-  test("setWidth / setFormat / setDragOver / setPreviewHeight", () => {
+  test("setWidth / setFormat / setDragOver / setPreviewHeight / setPreviewWidth", () => {
     const s = useForgeStore.getState();
     s.setWidth(320);
     s.setFormat("image/png");
     s.setDragOver(true);
     s.setPreviewHeight(800);
+    s.setPreviewWidth(900);
     const next = useForgeStore.getState();
     expect(next.width).toBe(320);
     expect(next.format).toBe("image/png");
     expect(next.dragOver).toBe(true);
     expect(next.previewHeight).toBe(800);
+    expect(next.previewWidth).toBe(900);
+    s.setPreviewWidth(null);
+    expect(useForgeStore.getState().previewWidth).toBeNull();
   });
 
   test("clearFile limpia todo", () => {

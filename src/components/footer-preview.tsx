@@ -1,7 +1,7 @@
 import { ArrowRight, Compass, Mail, MapPin, Phone } from "lucide-react";
 import type { ProcessResult } from "@/lib/image/pipeline";
 import { useForgeStore } from "@/store/use-forge-store";
-import { formatBytes } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
 
 interface Props {
   /** Último resultado procesado. Si es null se muestra el footer con placeholder. */
@@ -42,11 +42,16 @@ function ColumnHeading({ children }: { children: string }) {
  */
 export function FooterPreview({ result }: Props) {
   const previewHeight = useForgeStore((s) => s.previewHeight);
+  const previewWidth = useForgeStore((s) => s.previewWidth);
+  const constrained = previewWidth != null;
 
   return (
     <footer
-      className="relative w-full overflow-hidden bg-zinc-950 text-zinc-300"
-      style={{ minHeight: previewHeight }}
+      className={cn(
+        "relative w-full overflow-hidden bg-zinc-950 text-zinc-300",
+        constrained && "mx-auto border-x border-white/10 shadow-2xl"
+      )}
+      style={{ minHeight: previewHeight, maxWidth: previewWidth ?? undefined }}
     >
       {/* la imagen procesada es EL fondo del footer: mismo plano que el texto */}
       {result && (
