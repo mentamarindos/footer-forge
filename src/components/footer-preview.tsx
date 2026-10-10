@@ -41,8 +41,22 @@ function ColumnHeading({ children }: { children: string }) {
  */
 export function FooterPreview({ result }: Props) {
   return (
-    <footer className="w-full bg-zinc-950 text-zinc-300">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-12">
+    <footer className="relative w-full overflow-hidden bg-zinc-950 text-zinc-300">
+      {/* la imagen procesada es EL fondo del footer: mismo plano que el texto */}
+      {result && (
+        <>
+          <img
+            src={result.url}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          {/* velo: sólido arriba para legibilidad, se abre abajo como en la referencia */}
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-zinc-950/85 to-zinc-950/35" />
+        </>
+      )}
+
+      <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 pb-6 pt-12 sm:grid-cols-2 lg:grid-cols-12">
         {/* marca + contacto */}
         <div className="grid content-start gap-5 sm:col-span-2 lg:col-span-4">
           <div className="flex items-center gap-2 text-white">
@@ -123,7 +137,7 @@ export function FooterPreview({ result }: Props) {
       </div>
 
       {/* fila legal */}
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 pb-8 font-serif text-sm italic sm:justify-end">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 pb-10 font-serif text-sm italic sm:justify-end">
         <a href="#" className="hover:text-white hover:underline">Privacy Policy</a>
         <span className="text-zinc-600">|</span>
         <a href="#" className="hover:text-white hover:underline">Terms of Service</a>
@@ -131,27 +145,16 @@ export function FooterPreview({ result }: Props) {
         <a href="#" className="hover:text-white hover:underline">Cookie Policy</a>
       </div>
 
-      {/* tira de imagen procesada, inferior a ancho completo */}
-      <div className="relative h-52 w-full overflow-hidden bg-zinc-900 sm:h-72">
-        {result ? (
-          <img
-            src={result.url}
-            alt={`Footer estilo ${result.style.name}`}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center border-t-2 border-dashed border-white/15">
-            <p className="px-4 text-center font-serif text-sm italic text-zinc-500">
-              Tu imagen procesada aparecerá aquí en cuanto subas una
-            </p>
-          </div>
-        )}
-        {result && (
-          <p className="absolute bottom-2 left-3 rounded bg-black/60 px-2 py-0.5 font-mono text-[11px] text-zinc-200">
-            {result.style.name} · {result.width}×{result.height} · {formatBytes(result.size)}
-          </p>
-        )}
-      </div>
+      {/* chapita con datos del procesado */}
+      {result ? (
+        <p className="absolute bottom-2 right-3 rounded bg-black/60 px-2 py-0.5 font-mono text-[11px] text-zinc-200">
+          {result.style.name} · {result.width}×{result.height} · {formatBytes(result.size)}
+        </p>
+      ) : (
+        <p className="relative mx-auto w-full max-w-6xl px-4 pb-8 text-center font-serif text-sm italic text-zinc-500">
+          Tu imagen procesada será el fondo de este footer en cuanto subas una
+        </p>
+      )}
     </footer>
   );
 }
