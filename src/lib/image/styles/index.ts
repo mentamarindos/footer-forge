@@ -1,9 +1,11 @@
 import { blurStyle, ditherStyle, duotoneStyle, footerFadeStyle, grayscaleStyle, posterizeStyle } from "./classic";
+import { frostedStyle } from "./frosted";
 import { pixelArtStyle } from "./pixel-art";
 import { defaultParamsFor, type StyleDefinition } from "./types";
 
 export const STYLE_REGISTRY: Record<string, StyleDefinition> = {
   [pixelArtStyle.id]: pixelArtStyle,
+  [frostedStyle.id]: frostedStyle,
   [posterizeStyle.id]: posterizeStyle,
   [duotoneStyle.id]: duotoneStyle,
   [grayscaleStyle.id]: grayscaleStyle,

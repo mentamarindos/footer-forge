@@ -35,7 +35,7 @@ export default function App() {
           <h1 className="text-3xl font-bold tracking-tight">Footer Forge</h1>
           <p className="mx-auto max-w-xl text-sm text-muted-foreground">
             Convierte cualquier imagen en arte liviano para footers de landing pages:
-            7 estilos adaptativos, compresión automática a ≤ 100 KB y salida WebP.
+            8 estilos adaptativos, compresión automática a ≤ 100 KB y salida WebP.
           </p>
         </header>
 

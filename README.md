@@ -3,11 +3,12 @@
 Convierte **cualquier imagen** en arte liviano para **footers de landing pages**:
 aplica un estilo y comprime automáticamente a **≤ 100 KB** (WebP por defecto).
 
-## Estilos adaptativos (7)
+## Estilos adaptativos (8)
 
 | Estilo | Ideal para |
 |---|---|
 | **Pixel Art** | Retro gaming, marca juguetona |
+| **Frosted Mosaic** | Vidrio esmerilado con glow cálido, look galería |
 | **Posterize** | Look plano moderno |
 | **Duotono** | Colores de marca (5 presets + custom) |
 | **Grises** | Elegante, mínimo peso |

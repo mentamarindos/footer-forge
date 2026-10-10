@@ -20,57 +20,62 @@
   ],
   "files": [
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/utils.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/utils.ts",
       "type": "registry:lib",
       "target": "lib/utils.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/image/decode-image.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/decode-image.ts",
       "type": "registry:lib",
       "target": "lib/image/decode-image.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/image/compress-to-limit.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/compress-to-limit.ts",
       "type": "registry:lib",
       "target": "lib/image/compress-to-limit.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/image/pipeline.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/pipeline.ts",
       "type": "registry:lib",
       "target": "lib/image/pipeline.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/image/styles/types.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/types.ts",
       "type": "registry:lib",
       "target": "lib/image/styles/types.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/image/styles/pixel-art.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/pixel-art.ts",
       "type": "registry:lib",
       "target": "lib/image/styles/pixel-art.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/image/styles/classic.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/frosted.ts",
+      "type": "registry:lib",
+      "target": "lib/image/styles/frosted.ts"
+    },
+    {
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/classic.ts",
       "type": "registry:lib",
       "target": "lib/image/styles/classic.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/lib/image/styles/index.ts",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/index.ts",
       "type": "registry:lib",
       "target": "lib/image/styles/index.ts"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/components/format-badge.tsx",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/format-badge.tsx",
       "type": "registry:component",
       "target": "components/format-badge.tsx"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/components/style-controls.tsx",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/style-controls.tsx",
       "type": "registry:component",
       "target": "components/style-controls.tsx"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/components/footer-art-uploader.tsx",
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/footer-art-uploader.tsx",
       "type": "registry:component",
       "target": "components/footer-art-uploader.tsx"
     }

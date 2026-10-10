@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Contrast,
   Download,
+  Droplets,
   Grid2x2,
   ImagePlus,
   Layers,
@@ -45,6 +46,7 @@ export interface FooterArtUploaderProps {
 
 const STYLE_ICONS: Record<string, LucideIcon> = {
   "pixel-art": LayoutGrid,
+  frosted: Droplets,
   posterize: Layers,
   duotone: Contrast,
   grayscale: Moon,
