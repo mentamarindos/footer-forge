@@ -81,13 +81,15 @@ export function FooterPreview({ result }: Props) {
             aria-hidden
             className="absolute inset-0 h-full w-full object-cover"
           />
-          {/* velo inteligente: blur + luminosidad según tema, disipado hacia abajo */}
+          {/* velo inteligente: en dark nace negro y se funde abajo; en light aclara */}
           {previewBlur && (
             <div
               aria-hidden
               className={cn(
-                "absolute inset-x-0 top-0 h-[68%] backdrop-blur-md [mask-image:linear-gradient(to_bottom,black_45%,transparent)]",
-                isDark ? "backdrop-brightness-[.85]" : "backdrop-brightness-[1.12]"
+                "absolute inset-x-0 top-0 h-[68%] [mask-image:linear-gradient(to_bottom,black_45%,transparent)]",
+                isDark
+                  ? "bg-gradient-to-b from-zinc-950 via-zinc-950/60 to-transparent backdrop-blur-md"
+                  : "backdrop-blur-md backdrop-brightness-[1.12]"
               )}
             />
           )}
