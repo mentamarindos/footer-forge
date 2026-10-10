@@ -63,17 +63,27 @@ describe("forge store: acciones", () => {
   });
 
   test("pickFile(null) no hace nada", () => {
+    const before = useForgeStore.getState().fileKey;
     useForgeStore.getState().pickFile(null);
     expect(useForgeStore.getState().file).toBeNull();
+    expect(useForgeStore.getState().fileKey).toBe(before);
+  });
+
+  test("pickFile activa processing al instante e incrementa fileKey", () => {
+    const before = useForgeStore.getState().fileKey;
+    useForgeStore.getState().pickFile(fakeFile());
+    const next = useForgeStore.getState();
+    expect(next.processing).toBe(true);
+    expect(next.fileKey).toBe(before + 1);
   });
 
   test("setStyle cambia estilo y resetea params", () => {
     const s = useForgeStore.getState();
     s.updateParam("blockSize", 32);
-    s.setStyle("posterize");
+    s.setStyle("grayscale");
     const next = useForgeStore.getState();
-    expect(next.styleId).toBe("posterize");
-    expect(next.params).toEqual({ levels: 4 });
+    expect(next.styleId).toBe("grayscale");
+    expect(next.params).toEqual({ contrast: 110 });
   });
 
   test("setStyle ignora ids no disponibles", () => {

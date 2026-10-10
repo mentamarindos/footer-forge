@@ -3,10 +3,10 @@ import {
   Contrast,
   Droplets,
   Grid2x2,
-  Layers,
   LayoutGrid,
   Moon,
   PanelBottom,
+  PenLine,
   type LucideIcon,
 } from "lucide-react";
 import { STYLE_LIST, getStyle } from "@/lib/image/styles";
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 export const STYLE_ICONS: Record<string, LucideIcon> = {
   "pixel-art": LayoutGrid,
   frosted: Droplets,
-  posterize: Layers,
+  ballpoint: PenLine,
   duotone: Contrast,
   grayscale: Moon,
   dither: Grid2x2,

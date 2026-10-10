@@ -93,14 +93,72 @@ describe("pixel-art", () => {
   });
 });
 
-describe("posterize", () => {
-  test("con 2 niveles solo emite 0 o 255", () => {
-    const out = getStyle("posterize").apply(horizontalGradient(16, 4), { levels: 2 });
+describe("posterize eliminado, ballpoint presente", () => {
+  test("ids del registry", () => {
+    const ids = STYLE_LIST.map((s) => s.id);
+    expect(ids).toContain("ballpoint");
+    expect(ids).not.toContain("posterize");
+    expect(STYLE_LIST.length).toBe(8);
+  });
+});
+
+describe("ballpoint", () => {
+  const defaults = {
+    spacing: 4,
+    contrast: 120,
+    crosshatch: 70,
+    ink: "#1e40a0",
+    paper: "#f6eeda",
+  };
+
+  test("negro sólido → todo tinta", () => {
+    const out = getStyle("ballpoint").apply(solid(16, 16, 0, 0, 0), defaults);
     for (let i = 0; i < out.data.length; i += 4) {
-      expect([0, 255]).toContain(out.data[i]);
-      expect([0, 255]).toContain(out.data[i + 1]);
-      expect([0, 255]).toContain(out.data[i + 2]);
+      expect([out.data[i], out.data[i + 1], out.data[i + 2]]).toEqual([30, 64, 160]);
     }
+  });
+
+  test("blanco sólido → todo papel", () => {
+    const out = getStyle("ballpoint").apply(solid(16, 16, 255, 255, 255), defaults);
+    for (let i = 0; i < out.data.length; i += 4) {
+      const px = [out.data[i], out.data[i + 1], out.data[i + 2]];
+      // papel #f6eeda ± grano 7
+      for (const [c, base] of [[px[0], 246], [px[1], 238], [px[2], 218]] as Array<[number, number]>) {
+        expect(Math.abs(c - base)).toBeLessThanOrEqual(4);
+      }
+    }
+  });
+
+  test("cada píxel es tinta o papel (nada intermedio salvo grano)", () => {
+    const out = getStyle("ballpoint").apply(horizontalGradient(48, 32), defaults);
+    for (let i = 0; i < out.data.length; i += 4) {
+      const px = [out.data[i], out.data[i + 1], out.data[i + 2]];
+      const isInk = px[0] === 30 && px[1] === 64 && px[2] === 160;
+      const nearPaper =
+        Math.abs(px[0] - 246) <= 4 && Math.abs(px[1] - 238) <= 4 && Math.abs(px[2] - 218) <= 4;
+      expect(isInk || nearPaper).toBe(true);
+    }
+  });
+
+  test("determinista: misma entrada → misma salida", () => {
+    const input = horizontalGradient(48, 32);
+    const a = getStyle("ballpoint").apply(input, defaults);
+    const b = getStyle("ballpoint").apply(input, defaults);
+    expect(Array.from(a.data)).toEqual(Array.from(b.data));
+  });
+
+  test("más contraste → más tinta", () => {
+    const input = horizontalGradient(48, 32);
+    const count = (img: ImageData) => {
+      let n = 0;
+      for (let i = 0; i < img.data.length; i += 4) {
+        if (img.data[i] === 30 && img.data[i + 1] === 64) n++;
+      }
+      return n;
+    };
+    const soft = count(getStyle("ballpoint").apply(input, { ...defaults, contrast: 60 }));
+    const hard = count(getStyle("ballpoint").apply(input, { ...defaults, contrast: 180 }));
+    expect(hard).toBeGreaterThan(soft);
   });
 });
 

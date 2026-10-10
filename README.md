@@ -9,7 +9,7 @@ pick a style and it auto-compresses to **≤ 100 KB** (WebP by default).
 |---|---|
 | **Pixel Art** | Retro gaming, playful brands |
 | **Frosted Mosaic** | Frosted glass with warm glow, gallery look |
-| **Posterize** | Modern flat look |
+| **Ballpoint** | Blue ballpoint pen drawing on paper, engraving hatching |
 | **Duotone** | Brand colors (5 presets + custom) |
 | **Grayscale** | Elegant, minimal weight |
 | **Dither** | Retro 1-bit Bayer pattern |

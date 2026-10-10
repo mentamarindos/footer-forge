@@ -10,28 +10,6 @@ function hexToRgb(hex: string): [number, number, number] {
   return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16)];
 }
 
-// ---- Posterize ----
-export const posterizeStyle: StyleDefinition = {
-  id: "posterize",
-  name: "Posterize",
-  description: "Reduce tonos por canal. Look plano moderno para footers.",
-  params: [
-    { key: "levels", label: "Niveles", type: "slider", min: 2, max: 8, step: 1, defaultValue: 4 },
-  ],
-  apply(input, params: StyleParams) {
-    const levels = Math.max(2, Math.round(Number(params.levels ?? 4)));
-    const step = 255 / (levels - 1);
-    const out = clone(input);
-    const d = out.data;
-    for (let i = 0; i < d.length; i += 4) {
-      d[i] = Math.round(Math.round(d[i] / step) * step);
-      d[i + 1] = Math.round(Math.round(d[i + 1] / step) * step);
-      d[i + 2] = Math.round(Math.round(d[i + 2] / step) * step);
-    }
-    return out;
-  },
-};
-
 // ---- Grayscale ----
 export const grayscaleStyle: StyleDefinition = {
   id: "grayscale",

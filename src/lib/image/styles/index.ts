@@ -1,4 +1,5 @@
-import { blurStyle, ditherStyle, duotoneStyle, footerFadeStyle, grayscaleStyle, posterizeStyle } from "./classic";
+import { ballpointStyle } from "./ballpoint";
+import { blurStyle, ditherStyle, duotoneStyle, footerFadeStyle, grayscaleStyle } from "./classic";
 import { frostedStyle } from "./frosted";
 import { pixelArtStyle } from "./pixel-art";
 import { defaultParamsFor, type StyleDefinition } from "./types";
@@ -6,7 +7,7 @@ import { defaultParamsFor, type StyleDefinition } from "./types";
 export const STYLE_REGISTRY: Record<string, StyleDefinition> = {
   [pixelArtStyle.id]: pixelArtStyle,
   [frostedStyle.id]: frostedStyle,
-  [posterizeStyle.id]: posterizeStyle,
+  [ballpointStyle.id]: ballpointStyle,
   [duotoneStyle.id]: duotoneStyle,
   [grayscaleStyle.id]: grayscaleStyle,
   [ditherStyle.id]: ditherStyle,
