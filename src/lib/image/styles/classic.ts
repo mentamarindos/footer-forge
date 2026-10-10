@@ -113,12 +113,16 @@ const BAYER_4 = [
 export const ditherStyle: StyleDefinition = {
   id: "dither",
   name: "Dither",
-  description: "Tramado Bayer estilo 1-bit / retro mac.",
+  description: "Tramado Bayer estilo 1-bit / retro mac, con tintas a elegir.",
   params: [
     { key: "threshold", label: "Umbral", type: "slider", min: 0, max: 255, step: 1, defaultValue: 128 },
+    { key: "ink", label: "Tinta", type: "color", defaultValue: "#000000" },
+    { key: "paper", label: "Papel", type: "color", defaultValue: "#ffffff" },
   ],
   apply(input, params: StyleParams) {
     const th = Number(params.threshold ?? 128);
+    const [ir, ig, ib] = hexToRgb(String(params.ink ?? "#000000"));
+    const [pr, pg, pb] = hexToRgb(String(params.paper ?? "#ffffff"));
     const out = clone(input);
     const d = out.data;
     const w = input.width;
@@ -127,8 +131,10 @@ export const ditherStyle: StyleDefinition = {
         const i = (y * w + x) * 4;
         const lum = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
         const bias = (BAYER_4[(y % 4) * 4 + (x % 4)] / 16 - 0.5) * 64;
-        const v = lum + bias > th ? 255 : 0;
-        d[i] = d[i + 1] = d[i + 2] = v;
+        const isPaper = lum + bias > th;
+        d[i] = isPaper ? pr : ir;
+        d[i + 1] = isPaper ? pg : ig;
+        d[i + 2] = isPaper ? pb : ib;
       }
     }
     return out;

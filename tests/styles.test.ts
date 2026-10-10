@@ -133,6 +133,18 @@ describe("dither", () => {
       expect(out.data[i + 1]).toBe(out.data[i + 2]);
     }
   });
+
+  test("respeta tintas personalizadas", () => {
+    const out = getStyle("dither").apply(horizontalGradient(16, 16), {
+      threshold: 128,
+      ink: "#ff0000",
+      paper: "#0000ff",
+    });
+    for (let i = 0; i < out.data.length; i += 4) {
+      const px = [out.data[i], out.data[i + 1], out.data[i + 2]];
+      expect([[255, 0, 0], [0, 0, 255]]).toContainEqual(px);
+    }
+  });
 });
 
 describe("footer-fade", () => {
