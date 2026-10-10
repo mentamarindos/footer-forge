@@ -116,7 +116,7 @@ export const ditherStyle: StyleDefinition = {
   description: "Tramado Bayer estilo 1-bit / retro mac, con tintas a elegir.",
   params: [
     { key: "threshold", label: "Umbral", type: "slider", min: 0, max: 255, step: 1, defaultValue: 128 },
-    { key: "ink", label: "Tinta", type: "color", defaultValue: "#000000" },
+    { key: "ink", label: "Tinta", type: "color", defaultValue: "#004a99" },
     { key: "paper", label: "Papel", type: "color", defaultValue: "#ffffff" },
   ],
   apply(input, params: StyleParams) {

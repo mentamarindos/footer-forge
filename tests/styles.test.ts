@@ -126,7 +126,11 @@ describe("duotone", () => {
 
 describe("dither", () => {
   test("solo emite blanco o negro puros", () => {
-    const out = getStyle("dither").apply(horizontalGradient(16, 16), { threshold: 128 });
+    const out = getStyle("dither").apply(horizontalGradient(16, 16), {
+      threshold: 128,
+      ink: "#000000",
+      paper: "#ffffff",
+    });
     for (let i = 0; i < out.data.length; i += 4) {
       expect([0, 255]).toContain(out.data[i]);
       expect(out.data[i]).toBe(out.data[i + 1]);
