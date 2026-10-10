@@ -263,6 +263,26 @@ describe("blur", () => {
     const out = await getStyle("blur").apply(solid(8, 8, 200, 200, 200), { darken: 50 });
     expect(mean(out)).toBeCloseTo(100, 0);
   });
+
+  test("radius alto sangra los bordes duros", async () => {
+    const edge = new ImageData(16, 8);
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 16; x++) {
+        const i = (y * 16 + x) * 4;
+        const v = x < 8 ? 0 : 255;
+        edge.data[i] = edge.data[i + 1] = edge.data[i + 2] = v;
+        edge.data[i + 3] = 255;
+      }
+    }
+    const sharp = await getStyle("blur").apply(edge, { radius: 0, darken: 0 });
+    // radio 0: borde intacto
+    expect(sharp.data[(0 * 16 + 7) * 4]).toBe(0);
+    expect(sharp.data[(0 * 16 + 8) * 4]).toBe(255);
+    const soft = await getStyle("blur").apply(edge, { radius: 8, darken: 0 });
+    // radio 8: el negro se aclara y el blanco se oscurece junto al borde
+    expect(soft.data[(0 * 16 + 7) * 4]).toBeGreaterThan(0);
+    expect(soft.data[(0 * 16 + 8) * 4]).toBeLessThan(255);
+  });
 });
 
 describe("frosted", () => {

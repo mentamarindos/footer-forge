@@ -162,35 +162,79 @@ export const footerFadeStyle: StyleDefinition = {
 };
 
 // ---- Blur ----
+/** Box-blur separable con ventana deslizante O(1) por píxel y pasada. */
+function boxBlurH(
+  src: Uint8ClampedArray, dst: Uint8ClampedArray, w: number, h: number, r: number
+): void {
+  const div = 2 * r + 1;
+  for (let y = 0; y < h; y++) {
+    const row = y * w;
+    let accR = 0, accG = 0, accB = 0, accA = 0;
+    for (let x = -r; x <= r; x++) {
+      const cx = Math.min(w - 1, Math.max(0, x));
+      const i = (row + cx) * 4;
+      accR += src[i]; accG += src[i + 1]; accB += src[i + 2]; accA += src[i + 3];
+    }
+    for (let x = 0; x < w; x++) {
+      const i = (row + x) * 4;
+      dst[i] = accR / div; dst[i + 1] = accG / div; dst[i + 2] = accB / div; dst[i + 3] = accA / div;
+      const xo = (row + Math.min(w - 1, Math.max(0, x - r))) * 4;
+      const xi = (row + Math.min(w - 1, Math.max(0, x + r + 1))) * 4;
+      accR += src[xi] - src[xo];
+      accG += src[xi + 1] - src[xo + 1];
+      accB += src[xi + 2] - src[xo + 2];
+      accA += src[xi + 3] - src[xo + 3];
+    }
+  }
+}
+
+function boxBlurV(
+  src: Uint8ClampedArray, dst: Uint8ClampedArray, w: number, h: number, r: number
+): void {
+  const div = 2 * r + 1;
+  for (let x = 0; x < w; x++) {
+    let accR = 0, accG = 0, accB = 0, accA = 0;
+    for (let y = -r; y <= r; y++) {
+      const cy = Math.min(h - 1, Math.max(0, y));
+      const i = (cy * w + x) * 4;
+      accR += src[i]; accG += src[i + 1]; accB += src[i + 2]; accA += src[i + 3];
+    }
+    for (let y = 0; y < h; y++) {
+      const i = (y * w + x) * 4;
+      dst[i] = accR / div; dst[i + 1] = accG / div; dst[i + 2] = accB / div; dst[i + 3] = accA / div;
+      const yo = (Math.min(h - 1, Math.max(0, y - r)) * w + x) * 4;
+      const yi = (Math.min(h - 1, Math.max(0, y + r + 1)) * w + x) * 4;
+      accR += src[yi] - src[yo];
+      accG += src[yi + 1] - src[yo + 1];
+      accB += src[yi + 2] - src[yo + 2];
+      accA += src[yi + 3] - src[yo + 3];
+    }
+  }
+}
+
 export const blurStyle: StyleDefinition = {
   id: "blur",
   name: "Blur fondo",
-  description: "Suavizado para usar como fondo tenue del footer.",
+  description: "Desenfoque gaussiano (3 pasadas) para fondos tenues.",
   params: [
+    { key: "radius", label: "Desenfoque", type: "slider", min: 0, max: 24, step: 1, defaultValue: 6, unit: "px" },
     { key: "darken", label: "Oscurecer", type: "slider", min: 0, max: 80, step: 1, defaultValue: 30, unit: "%" },
   ],
   apply(input, params: StyleParams) {
-    // Box-blur rápido 3x3 x2 pasadas + darken. El blur fuerte real se hace en canvas con ctx.filter.
+    // 3× (horizontal + vertical) ≈ gaussiano, con bordes clampados
+    const radius = Math.max(0, Math.min(24, Math.round(Number(params.radius ?? 6))));
     const dark = Number(params.darken ?? 30) / 100;
     const w = input.width;
     const h = input.height;
-    let src = new Uint8ClampedArray(input.data);
-    for (let pass = 0; pass < 2; pass++) {
-      const dst = new Uint8ClampedArray(src);
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const i = (y * w + x) * 4;
-          for (let c = 0; c < 3; c++) {
-            dst[i + c] =
-              (src[i + c] * 4 +
-                src[i - 4 + c] + src[i + 4 + c] +
-                src[i - w * 4 + c] + src[i + w * 4 + c]) / 8;
-          }
-        }
+    const a = new Uint8ClampedArray(input.data);
+    const b = new Uint8ClampedArray(input.data);
+    if (radius > 0) {
+      for (let pass = 0; pass < 3; pass++) {
+        boxBlurH(a, b, w, h, radius);
+        boxBlurV(b, a, w, h, radius);
       }
-      src = dst;
     }
-    const out = new ImageData(src, w, h);
+    const out = new ImageData(a, w, h);
     const d = out.data;
     for (let i = 0; i < d.length; i += 4) {
       d[i] *= 1 - dark;
