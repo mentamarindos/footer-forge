@@ -53,8 +53,7 @@ export function OutputSettings() {
         </div>
       </div>
       <div className="grid gap-1.5">
-        <Label className="text-xs">Formato</Label>
-        <div className="grid grid-cols-3 gap-1 rounded-lg border bg-muted p-1" role="group" aria-label="Formato de salida">
+        <Label className="text-xs">Formato</Label>        <div className="grid grid-cols-3 gap-1 rounded-lg border bg-muted p-1" role="group" aria-label="Formato de salida">
           {FORMATS.map((f) => {
             const isActive = f.value === format;
             return (
@@ -79,6 +78,12 @@ export function OutputSettings() {
           })}
         </div>
       </div>
+      {format === "image/png" && (
+        <p className="animate-fade-in text-[11px] leading-snug text-muted-foreground">
+          PNG no comprime por calidad: con fotos reales casi nunca bajará del límite.
+          Para fotos usa WebP o JPEG.
+        </p>
+      )}
       <div className="grid gap-1.5">
         <Label className="text-xs">Límite de peso</Label>
         <div className="grid grid-cols-4 gap-1 rounded-lg border bg-muted p-1" role="group" aria-label="Límite de peso">

@@ -13,26 +13,43 @@ export function Dropzone() {
   const clearFile = useForgeStore((s) => s.clearFile);
   const setDragOver = useForgeStore((s) => s.setDragOver);
   const inputRef = useRef<HTMLInputElement>(null);
+  // contador enter/leave: evita el parpadeo al pasar sobre hijos
+  const dragDepth = useRef(0);
+
+  const openPicker = () => inputRef.current?.click();
 
   return (
     <div
       role="button"
       tabIndex={0}
-      aria-label="Subir imagen"
-      onClick={() => inputRef.current?.click()}
-      onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-      onDragOver={(e) => {
+      aria-label={file ? `Imagen ${file.name}. Enter para cambiarla.` : "Subir imagen"}
+      onClick={openPicker}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openPicker();
+        }
+      }}
+      onDragEnter={(e) => {
         e.preventDefault();
+        dragDepth.current++;
         setDragOver(true);
       }}
-      onDragLeave={() => setDragOver(false)}
+      onDragOver={(e) => e.preventDefault()}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        dragDepth.current = Math.max(0, dragDepth.current - 1);
+        if (dragDepth.current === 0) setDragOver(false);
+      }}
       onDrop={(e) => {
         e.preventDefault();
+        dragDepth.current = 0;
         setDragOver(false);
         pickFile(e.dataTransfer.files?.[0]);
       }}
       className={cn(
         "group flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-3 text-left transition-all duration-150",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         "active:scale-[0.99]",
         dragOver
           ? "scale-[1.01] border-primary bg-accent"
@@ -50,44 +67,30 @@ export function Dropzone() {
             <p className="truncate text-sm font-medium">{file.name}</p>
             <p className="font-mono text-xs text-muted-foreground">{formatBytes(file.size)}</p>
           </div>
-          <span
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             aria-label="Cambiar imagen"
             title="Cambiar imagen"
             onClick={(e) => {
               e.stopPropagation();
-              inputRef.current?.click();
+              openPicker();
             }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.stopPropagation();
-                inputRef.current?.click();
-              }
-            }}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <RefreshCw className="h-4 w-4" />
-          </span>
-          <span
-            role="button"
-            tabIndex={0}
+          </button>
+          <button
+            type="button"
             aria-label="Quitar imagen"
             title="Quitar imagen"
             onClick={(e) => {
               e.stopPropagation();
               clearFile();
             }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.stopPropagation();
-                clearFile();
-              }
-            }}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <X className="h-4 w-4" />
-          </span>
+          </button>
         </>
       ) : (
         <>
@@ -111,6 +114,7 @@ export function Dropzone() {
         ref={inputRef}
         type="file"
         accept={SUPPORTED_INPUT_ACCEPT}
+        aria-label="Elegir archivo de imagen"
         className="hidden"
         onChange={(e) => {
           pickFile(e.target.files?.[0]);

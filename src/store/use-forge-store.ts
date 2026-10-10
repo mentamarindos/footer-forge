@@ -112,6 +112,24 @@ function initialDark(): boolean {
 
 const memoryFallback = new Map<string, string>();
 
+/** Throttle de escritura: arrastrar sliders no debe machacar localStorage a 60Hz. */
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingPersist: Array<[string, string]> = [];
+
+function flushPersist(): void {
+  persistTimer = null;
+  const batch = pendingPersist;
+  pendingPersist = [];
+  for (const [name, value] of batch) {
+    try {
+      if (typeof localStorage === "undefined") memoryFallback.set(name, value);
+      else localStorage.setItem(name, value);
+    } catch {
+      /* modo privado: ignora */
+    }
+  }
+}
+
 /** Storage a prueba de SSR/tests/privado: cae a memoria si no hay localStorage. */
 const safeStorage = createJSONStorage(() => ({
   getItem: (name: string) => {
@@ -123,12 +141,10 @@ const safeStorage = createJSONStorage(() => ({
     }
   },
   setItem: (name: string, value: string) => {
-    try {
-      if (typeof localStorage === "undefined") memoryFallback.set(name, value);
-      else localStorage.setItem(name, value);
-    } catch {
-      /* modo privado: ignora */
-    }
+    pendingPersist = pendingPersist.filter(([n]) => n !== name);
+    pendingPersist.push([name, value]);
+    if (persistTimer) return;
+    persistTimer = setTimeout(flushPersist, 250);
   },
   removeItem: (name: string) => {
     try {

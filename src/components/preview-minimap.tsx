@@ -11,7 +11,10 @@ import { cn } from "@/lib/utils";
  * Colapsable a una píldora.
  */
 export function PreviewMinimap() {
-  const [open, setOpen] = useState(true);
+  // en móvil arranca colapsado para no tapar el footer
+  const [open, setOpen] = useState(
+    () => typeof window === "undefined" || window.innerWidth >= 768
+  );
   const result = useForgeStore((s) => s.result);
   const previewWidth = useForgeStore((s) => s.previewWidth);
   const previewHeight = useForgeStore((s) => s.previewHeight);

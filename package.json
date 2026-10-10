@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "bun --bun vite",
-    "build": "bunx tsc -b && bun --bun vite build",
+    "build": "bun run typecheck && bun --bun vite build",
+    "typecheck": "bunx tsc -b",
     "preview": "bun --bun vite preview",
     "lint": "bunx oxlint",
     "test": "bun test"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.16",
-    "@radix-ui/react-select": "^2.3.8",
     "@radix-ui/react-slider": "^1.5.0",
     "@radix-ui/react-slot": "^1.4.0",
     "class-variance-authority": "^0.7.1",

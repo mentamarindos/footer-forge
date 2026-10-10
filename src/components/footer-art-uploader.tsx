@@ -32,6 +32,8 @@ export interface FooterArtUploaderProps {
  * Componente shadcn autocontenido. Usa el store de Zustand interno
  * (una instancia por página) y compone los bloques especializados.
  */
+let mountedInstances = 0;
+
 export function FooterArtUploader({
   defaultStyle = "pixel-art",
   availableStyles,
@@ -55,6 +57,11 @@ export function FooterArtUploader({
 
   useEffect(() => {
     mounted.current = true;
+    if (++mountedInstances > 1) {
+      console.warn(
+        "[footer-art-uploader] Solo se soporta una instancia por página: el store es compartido."
+      );
+    }
     configure({
       ...initialCfg,
       onProcessed: (r) => {
@@ -63,6 +70,7 @@ export function FooterArtUploader({
     });
     return () => {
       mounted.current = false;
+      mountedInstances = Math.max(0, mountedInstances - 1);
       useForgeStore.setState({ onProcessed: null });
     };
   }, [configure, initialCfg]);

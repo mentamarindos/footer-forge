@@ -72,6 +72,10 @@ export function FooterPreview({ result }: Props) {
         constrained && "mx-auto border-x border-zinc-900/10 shadow-2xl dark:border-white/10"
       )}
       style={{ minHeight: previewHeight, maxWidth: previewWidth ?? undefined }}
+      // mockup: los links del preview no navegan
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest("a")) e.preventDefault();
+      }}
     >
       {result && (
         <>

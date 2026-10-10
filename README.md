@@ -32,7 +32,7 @@ Detection is by **magic bytes**, not file extension.
 cd footer-forge
 bun install
 bun run dev     # local server
-bun test        # 32 tests (styles + utils + store)
+bun test        # 57 tests (styles + utils + store + color + registry)
 bun run build   # tsc + vite build
 bun run lint    # oxlint
 ```
@@ -105,8 +105,10 @@ export const myStyle: StyleDefinition = {
     { key: "strength", label: "Strength", type: "slider", min: 0, max: 100, step: 1, defaultValue: 50, unit: "%" },
   ],
   apply(input, params) {
-    // transform and return a NEW ImageData
-    return input;
+    // transform and return a NEW ImageData (never mutate the input)
+    const out = new ImageData(new Uint8ClampedArray(input.data), input.width, input.height);
+    // ...mutate out here...
+    return out;
   },
 };
 // + register it in src/lib/image/styles/index.ts
