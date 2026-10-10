@@ -46,6 +46,11 @@
       "target": "lib/image/styles/types.ts"
     },
     {
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/color.ts",
+      "type": "registry:lib",
+      "target": "lib/image/color.ts"
+    },
+    {
       "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/pixel-art.ts",
       "type": "registry:lib",
       "target": "lib/image/styles/pixel-art.ts"

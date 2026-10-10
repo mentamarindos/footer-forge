@@ -292,4 +292,12 @@ describe("frosted", () => {
     const distGlowed = 255 * 3 - (glowed.data[c] + glowed.data[c + 1] + glowed.data[c + 2]);
     expect(distGlowed).toBeLessThan(distPlain);
   });
+
+  test("determinista: el grano no cambia entre corridas", async () => {
+    const input = horizontalGradient(32, 24);
+    const p = { tileSize: 8, frost: 40, glow: 50, warmth: 30, grain: 12, edgeTint: "#fbeef1", warmTint: "#ff6a3d" };
+    const a = await getStyle("frosted").apply(input, p);
+    const b = await getStyle("frosted").apply(input, p);
+    expect(Array.from(a.data)).toEqual(Array.from(b.data));
+  });
 });

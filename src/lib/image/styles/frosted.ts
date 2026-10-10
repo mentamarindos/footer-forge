@@ -1,14 +1,5 @@
 import type { StyleDefinition, StyleParams } from "./types";
-
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16)];
-}
-
-function clamp01(v: number): number {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
-}
+import { clamp01, hash2, hexToRgb } from "@/lib/image/color";
 
 function smooth(a: number, b: number, t: number): number {
   const x = clamp01((t - a) / (b - a));
@@ -85,9 +76,9 @@ function applyFrosted(input: ImageData, params: StyleParams): ImageData {
             pb += (255 - pb) * 0.45;
           }
 
-          // grano fino
+          // grano fino determinista (estable entre renders)
           if (grain > 0) {
-            const nz = (Math.random() - 0.5) * grain;
+            const nz = (hash2(x, y) - 0.5) * grain;
             pr += nz; pg += nz; pb += nz;
           }
 

@@ -1,13 +1,8 @@
 import type { StyleDefinition, StyleParams } from "./types";
+import { hexToRgb } from "@/lib/image/color";
 
 function clone(d: ImageData): ImageData {
   return new ImageData(new Uint8ClampedArray(d.data), d.width, d.height);
-}
-
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16)];
 }
 
 // ---- Grayscale ----
@@ -154,7 +149,7 @@ export const footerFadeStyle: StyleDefinition = {
         else if (dir === "to-bottom") t = y / h;
         else if (dir === "to-left") t = 1 - x / w;
         else t = x / w;
-        // t=1 Muss stark überlagert sein (Seite wo texto va), t=0 imagen pura
+        // t=1 máxima cobertura (lado del texto), t=0 imagen pura
         const mask = Math.max(0, Math.min(1, (t - start) / (1 - start))) * strength;
         const i = (y * w + x) * 4;
         d[i] = d[i] * (1 - mask) + or * mask;

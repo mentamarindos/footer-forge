@@ -1,23 +1,8 @@
 import type { StyleDefinition, StyleParams } from "./types";
-
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16)];
-}
-
-function clamp01(v: number): number {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
-}
+import { clamp01, hash2, hexToRgb } from "@/lib/image/color";
 
 function frac(v: number): number {
   return v - Math.floor(v);
-}
-
-/** Ruido determinista (estable entre renders, sin Math.random). */
-function hash2(x: number, y: number): number {
-  const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-  return h - Math.floor(h);
 }
 
 /**
