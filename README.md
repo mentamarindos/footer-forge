@@ -26,13 +26,18 @@ JPEG, PNG, WebP, AVIF, GIF (1er frame), BMP, ICO, SVG,
 TIFF (vía `utif`, lazy) y HEIC/HEIF (vía `heic-to`, lazy).
 La detección es por **magic bytes**, no por extensión.
 
-## Uso local
+## Uso local (Bun)
 
 ```bash
 cd footer-forge
-npm install
-npm run dev
+bun install
+bun run dev     # servidor local
+bun test        # 22 tests (estilos + utils)
+bun run build   # tsc + vite build
+bun run lint    # oxlint
 ```
+
+Requiere [Bun](https://bun.sh) ≥ 1.0.
 
 ## Instalar como componente shadcn
 

@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "dev": "bun --bun vite",
+    "build": "bunx tsc -b && bun --bun vite build",
+    "preview": "bun --bun vite preview",
+    "lint": "bunx oxlint",
+    "test": "bun test"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.16",
