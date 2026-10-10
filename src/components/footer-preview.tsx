@@ -46,6 +46,7 @@ export function FooterPreview({ result }: Props) {
       {result && (
         <>
           <img
+            key={result.url}
             src={result.url}
             alt=""
             aria-hidden

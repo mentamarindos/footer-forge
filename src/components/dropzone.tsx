@@ -112,7 +112,11 @@ export function Dropzone() {
         type="file"
         accept={SUPPORTED_INPUT_ACCEPT}
         className="hidden"
-        onChange={(e) => pickFile(e.target.files?.[0])}
+        onChange={(e) => {
+          pickFile(e.target.files?.[0]);
+          // resetea el input: re-seleccionar el mismo archivo vuelve a disparar change
+          e.currentTarget.value = "";
+        }}
       />
     </div>
   );

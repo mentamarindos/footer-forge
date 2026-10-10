@@ -9,6 +9,7 @@ import { formatBytes } from "@/lib/utils";
 export function CompareView() {
   const file = useForgeStore((s) => s.file);
   const originalUrl = useForgeStore((s) => s.originalUrl);
+  const fileKey = useForgeStore((s) => s.fileKey);
   const result = useForgeStore((s) => s.result);
   const processing = useForgeStore((s) => s.processing);
   const styleId = useForgeStore((s) => s.styleId);
@@ -37,6 +38,7 @@ export function CompareView() {
         </figcaption>
         {originalUrl && (
           <img
+            key={`orig-${fileKey}-${originalUrl}`}
             src={originalUrl}
             alt="Original"
             className="max-h-80 w-full rounded-lg border bg-muted object-contain"

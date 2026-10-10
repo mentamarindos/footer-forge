@@ -21,6 +21,8 @@ export interface ForgeConfig {
 interface ForgeState {
   file: File | null;
   originalUrl: string | null;
+  /** Nonce que cambia en cada pick/clear: fuerza remontaje de <img>. */
+  fileKey: number;
   styleId: string;
   params: StyleParams;
   width: number;
@@ -57,6 +59,7 @@ function resolveStyles(available?: string[]): string[] {
 export const useForgeStore = create<ForgeState>()((set, get) => ({
   file: null,
   originalUrl: null,
+  fileKey: 0,
   styleId: "pixel-art",
   params: getDefaultParams("pixel-art"),
   width: 640,
@@ -89,14 +92,22 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
     const { originalUrl, result } = get();
     if (originalUrl) URL.revokeObjectURL(originalUrl);
     if (result) URL.revokeObjectURL(result.url);
-    set({ file: f, originalUrl: URL.createObjectURL(f), result: null });
+    runSeq++; // invalida al instante cualquier run en vuelo del archivo anterior
+    set((s) => ({
+      file: f,
+      originalUrl: URL.createObjectURL(f),
+      result: null,
+      processing: true, // feedback inmediato, sin ventana muerta hasta el debounce
+      fileKey: s.fileKey + 1,
+    }));
   },
 
   clearFile: () => {
     const { originalUrl, result } = get();
     if (originalUrl) URL.revokeObjectURL(originalUrl);
     if (result) URL.revokeObjectURL(result.url);
-    set({ file: null, originalUrl: null, result: null });
+    runSeq++;
+    set((s) => ({ file: null, originalUrl: null, result: null, processing: false, fileKey: s.fileKey + 1 }));
   },
 
   setStyle: (id) => {
