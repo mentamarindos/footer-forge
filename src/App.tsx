@@ -115,9 +115,9 @@ export default function App() {
         <InstallStrip />
       </header>
 
-      <main className="mx-auto grid w-full max-w-[1400px] gap-4 px-4 py-5 lg:grid-cols-[330px_minmax(0,1fr)]">
-        {/* sidebar: entrada + estilo + exportar */}
-        <aside className="grid content-start gap-4">
+      <main className="mx-auto grid w-full max-w-[1400px] gap-4 px-4 py-5">
+        {/* fila única: las 5 tarjetas en 5 columnas */}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-[13px]">Imagen</CardTitle>
@@ -136,23 +136,6 @@ export default function App() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-[13px]">Exportar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ActionBar />
-              {!file && (
-                <p className="text-xs text-muted-foreground">
-                  Aquí verás el peso final y la descarga en cuanto subas una imagen.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </aside>
-
-        {/* workspace: ajustes + salida (el resultado vive en el footer) */}
-        <section className="grid content-start gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-[13px]">Ajustes del estilo</CardTitle>
@@ -175,7 +158,21 @@ export default function App() {
               <OutputSettings />
             </CardContent>
           </Card>
-        </section>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-[13px]">Exportar</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ActionBar />
+              {!file && (
+                <p className="text-xs text-muted-foreground">
+                  Aquí verás el peso final y la descarga en cuanto subas una imagen.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </main>
 
       {/* footer real a 100% del ancho, alimentado en vivo desde el store */}
