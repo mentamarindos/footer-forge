@@ -15,8 +15,10 @@ export function PreviewMinimap() {
   const result = useForgeStore((s) => s.result);
   const previewWidth = useForgeStore((s) => s.previewWidth);
   const previewHeight = useForgeStore((s) => s.previewHeight);
+  const previewBlur = useForgeStore((s) => s.previewBlur);
   const setPreviewWidth = useForgeStore((s) => s.setPreviewWidth);
   const setPreviewHeight = useForgeStore((s) => s.setPreviewHeight);
+  const setPreviewBlur = useForgeStore((s) => s.setPreviewBlur);
 
   if (!open) {
     return (
@@ -115,6 +117,29 @@ export function PreviewMinimap() {
           value={[previewHeight]}
           onValueChange={([v]) => setPreviewHeight(v)}
         />
+      </div>
+
+      <div className="flex items-center justify-between gap-2">
+        <Label className="text-[11px]">Difuminado arriba</Label>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={previewBlur}
+          onClick={() => setPreviewBlur(!previewBlur)}
+          title={previewBlur ? "Quitar difuminado" : "Poner difuminado"}
+          className={cn(
+            "relative h-5 w-9 shrink-0 rounded-full transition-colors duration-150",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            previewBlur ? "bg-primary" : "bg-muted-foreground/30"
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-150",
+              previewBlur ? "left-[18px]" : "left-0.5"
+            )}
+          />
+        </button>
       </div>
     </div>
   );

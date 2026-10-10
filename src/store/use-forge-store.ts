@@ -59,6 +59,8 @@ interface ForgeState {
   previewHeight: number;
   /** Ancho máximo del preview (px). null = ancho completo. */
   previewWidth: number | null;
+  /** Difuminado en la zona alta del preview (legibilidad según la foto). */
+  previewBlur: boolean;
 
   configure: (cfg: ForgeConfig) => void;
   pickFile: (f: File | undefined | null) => void;
@@ -70,6 +72,7 @@ interface ForgeState {
   setDragOver: (v: boolean) => void;
   setPreviewHeight: (h: number) => void;
   setPreviewWidth: (w: number | null) => void;
+  setPreviewBlur: (v: boolean) => void;
   run: () => Promise<void>;
   download: () => void;
 }
@@ -100,6 +103,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   onProcessed: null,
   previewHeight: DEFAULT_PREVIEW_HEIGHT,
   previewWidth: null,
+  previewBlur: true,
 
   configure: (cfg) => {
     const available = resolveStyles(cfg.availableStyles);
@@ -151,6 +155,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   setDragOver: (dragOver) => set({ dragOver }),
   setPreviewHeight: (previewHeight) => set({ previewHeight }),
   setPreviewWidth: (previewWidth) => set({ previewWidth }),
+  setPreviewBlur: (previewBlur) => set({ previewBlur }),
 
   run: async () => {
     const { file, styleId, params, width, maxBytes, format, onProcessed } = get();

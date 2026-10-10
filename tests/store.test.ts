@@ -23,6 +23,7 @@ describe("forge store: estado inicial", () => {
     expect(s.processing).toBe(false);
     expect(s.previewHeight).toBe(DEFAULT_PREVIEW_HEIGHT);
     expect(s.previewWidth).toBeNull();
+    expect(s.previewBlur).toBe(true);
     expect(s.availableStyles.length).toBe(8);
   });
 
@@ -130,6 +131,8 @@ describe("forge store: acciones", () => {
     expect(next.previewWidth).toBe(900);
     s.setPreviewWidth(null);
     expect(useForgeStore.getState().previewWidth).toBeNull();
+    s.setPreviewBlur(false);
+    expect(useForgeStore.getState().previewBlur).toBe(false);
   });
 
   test("clearFile limpia todo", () => {

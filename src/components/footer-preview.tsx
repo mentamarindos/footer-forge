@@ -43,6 +43,7 @@ function ColumnHeading({ children }: { children: string }) {
 export function FooterPreview({ result }: Props) {
   const previewHeight = useForgeStore((s) => s.previewHeight);
   const previewWidth = useForgeStore((s) => s.previewWidth);
+  const previewBlur = useForgeStore((s) => s.previewBlur);
   const constrained = previewWidth != null;
 
   return (
@@ -55,6 +56,7 @@ export function FooterPreview({ result }: Props) {
     >
       {/* la imagen procesada es EL fondo del footer: mismo plano que el texto */}
       {result && (
+        <>
           <img
             key={result.url}
             src={result.url}
@@ -62,7 +64,15 @@ export function FooterPreview({ result }: Props) {
             aria-hidden
             className="absolute inset-0 h-full w-full object-cover"
           />
-        )}
+          {/* difuminado solo en la zona alta (texto legible), se disipa hacia abajo */}
+          {previewBlur && (
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-[68%] backdrop-blur-md [mask-image:linear-gradient(to_bottom,black_45%,transparent)]"
+            />
+          )}
+        </>
+      )}
 
       <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 pb-6 pt-12 sm:grid-cols-2 lg:grid-cols-12">
         {/* marca + contacto */}
