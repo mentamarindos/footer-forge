@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
+import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, MAX_PREVIEW_ZOOM, WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
 
 function fakeFile(name = "foto.png", size = 2048): File {
   return new File([new Uint8Array(size)], name, { type: "image/png" });
@@ -23,6 +23,7 @@ describe("forge store: estado inicial", () => {
     expect(s.processing).toBe(false);
     expect(s.previewHeight).toBe(DEFAULT_PREVIEW_HEIGHT);
     expect(s.previewWidth).toBeNull();
+    expect(s.previewZoom).toBe(MAX_PREVIEW_ZOOM);
     expect(s.previewBlur).toBe(true);
     expect(s.availableStyles.length).toBe(8);
   });
@@ -131,6 +132,8 @@ describe("forge store: acciones", () => {
     expect(next.previewWidth).toBe(900);
     s.setPreviewWidth(null);
     expect(useForgeStore.getState().previewWidth).toBeNull();
+    s.setPreviewZoom(0.5);
+    expect(useForgeStore.getState().previewZoom).toBe(0.5);
     s.setPreviewBlur(false);
     expect(useForgeStore.getState().previewBlur).toBe(false);
   });

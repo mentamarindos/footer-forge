@@ -30,6 +30,8 @@ export const DEFAULT_WIDTH = 1280;
 export const DEFAULT_PREVIEW_HEIGHT = 560;
 export const MIN_PREVIEW_WIDTH = 360;
 export const MAX_PREVIEW_WIDTH = 1600;
+export const MIN_PREVIEW_ZOOM = 0.3;
+export const MAX_PREVIEW_ZOOM = 1;
 
 export interface ForgeConfig {
   defaultStyle?: string;
@@ -59,6 +61,8 @@ interface ForgeState {
   previewHeight: number;
   /** Ancho máximo del preview (px). null = ancho completo. */
   previewWidth: number | null;
+  /** Escala literal de la imagen de fondo (0.3–1). */
+  previewZoom: number;
   /** Difuminado en la zona alta del preview (legibilidad según la foto). */
   previewBlur: boolean;
 
@@ -72,6 +76,7 @@ interface ForgeState {
   setDragOver: (v: boolean) => void;
   setPreviewHeight: (h: number) => void;
   setPreviewWidth: (w: number | null) => void;
+  setPreviewZoom: (z: number) => void;
   setPreviewBlur: (v: boolean) => void;
   run: () => Promise<void>;
   download: () => void;
@@ -103,6 +108,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   onProcessed: null,
   previewHeight: DEFAULT_PREVIEW_HEIGHT,
   previewWidth: null,
+  previewZoom: MAX_PREVIEW_ZOOM,
   previewBlur: true,
 
   configure: (cfg) => {
@@ -155,6 +161,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   setDragOver: (dragOver) => set({ dragOver }),
   setPreviewHeight: (previewHeight) => set({ previewHeight }),
   setPreviewWidth: (previewWidth) => set({ previewWidth }),
+  setPreviewZoom: (previewZoom) => set({ previewZoom }),
   setPreviewBlur: (previewBlur) => set({ previewBlur }),
 
   run: async () => {

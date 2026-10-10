@@ -60,6 +60,7 @@ function ColumnHeading({ children }: { children: string }) {
 export function FooterPreview({ result }: Props) {
   const previewHeight = useForgeStore((s) => s.previewHeight);
   const previewWidth = useForgeStore((s) => s.previewWidth);
+  const previewZoom = useForgeStore((s) => s.previewZoom);
   const previewBlur = useForgeStore((s) => s.previewBlur);
   const isDark = useIsDark();
   const constrained = previewWidth != null;
@@ -79,7 +80,8 @@ export function FooterPreview({ result }: Props) {
             src={result.url}
             alt=""
             aria-hidden
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-200"
+            style={{ transform: `scale(${previewZoom})` }}
           />
           {/* velo inteligente: en dark nace negro y se funde abajo; en light aclara */}
           {previewBlur && (

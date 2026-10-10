@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { MAX_PREVIEW_WIDTH, MIN_PREVIEW_WIDTH, useForgeStore } from "@/store/use-forge-store";
+import { MAX_PREVIEW_WIDTH, MAX_PREVIEW_ZOOM, MIN_PREVIEW_WIDTH, MIN_PREVIEW_ZOOM, useForgeStore } from "@/store/use-forge-store";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,6 +18,8 @@ export function PreviewMinimap() {
   const previewBlur = useForgeStore((s) => s.previewBlur);
   const setPreviewWidth = useForgeStore((s) => s.setPreviewWidth);
   const setPreviewHeight = useForgeStore((s) => s.setPreviewHeight);
+  const previewZoom = useForgeStore((s) => s.previewZoom);
+  const setPreviewZoom = useForgeStore((s) => s.setPreviewZoom);
   const setPreviewBlur = useForgeStore((s) => s.setPreviewBlur);
 
   if (!open) {
@@ -116,6 +118,22 @@ export function PreviewMinimap() {
           step={20}
           value={[previewHeight]}
           onValueChange={([v]) => setPreviewHeight(v)}
+        />
+      </div>
+
+      <div className="grid gap-1">
+        <div className="flex items-center justify-between">
+          <Label className="text-[11px]">Imagen</Label>
+          <span className="font-mono text-[10px] text-muted-foreground">
+            {Math.round(previewZoom * 100)}%
+          </span>
+        </div>
+        <Slider
+          min={MIN_PREVIEW_ZOOM}
+          max={MAX_PREVIEW_ZOOM}
+          step={0.05}
+          value={[previewZoom]}
+          onValueChange={([v]) => setPreviewZoom(v)}
         />
       </div>
 
