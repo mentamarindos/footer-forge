@@ -1,4 +1,4 @@
-import { ArrowRight, Globe, Mail } from "lucide-react";
+import { ArrowRight, Compass, Mail, MapPin, Phone } from "lucide-react";
 import type { ProcessResult } from "@/lib/image/pipeline";
 import { formatBytes } from "@/lib/utils";
 
@@ -7,23 +7,132 @@ interface Props {
   result: ProcessResult | null;
 }
 
-const COLUMNS: Array<{ title: string; links: string[] }> = [
-  { title: "Producto", links: ["Características", "Precios", "Integraciones", "Changelog"] },
-  { title: "Empresa", links: ["Nosotros", "Blog", "Empleo", "Contacto"] },
-  { title: "Recursos", links: ["Documentación", "Guías", "Comunidad", "Soporte"] },
-  { title: "Legal", links: ["Privacidad", "Términos", "Cookies", "Licencias"] },
+const LINK_COLUMNS: Array<{ title: string; links: string[] }> = [
+  {
+    title: "Shop",
+    links: ["All Collections", "Vases", "Tableware", "Decor", "Limited Editions", "Gift Sets"],
+  },
+  {
+    title: "About Us",
+    links: ["Our Story", "Craftsmanship", "Sustainability", "Careers", "Press & Media"],
+  },
+  {
+    title: "Help & Support",
+    links: ["FAQs", "Shipping & Delivery", "Track Your Order", "Contact Us"],
+  },
 ];
 
+const SOCIALS = ["Facebook", "X", "Instagram", "LinkedIn"];
+
+function ColumnHeading({ children }: { children: string }) {
+  return (
+    <div className="grid gap-2">
+      <p className="font-serif text-sm uppercase tracking-[0.2em] text-zinc-100">{children}</p>
+      <span className="h-px w-8 bg-zinc-500" aria-hidden />
+    </div>
+  );
+}
+
 /**
- * Mock de footer de landing a ancho completo.
- * La imagen procesada va como tira superior full-bleed; debajo,
- * columnas de links, social y barra inferior como un footer real.
+ * Mock de footer de landing con el layout de referencia:
+ * marca + contacto a la izquierda, columnas de links, newsletter
+ * a la derecha, fila legal y la imagen procesada como tira
+ * inferior a ancho completo.
  */
 export function FooterPreview({ result }: Props) {
   return (
-    <footer className="w-full border-t">
-      {/* tira de imagen full-bleed */}
-      <div className="relative h-56 w-full overflow-hidden bg-muted sm:h-72">
+    <footer className="w-full bg-zinc-950 text-zinc-300">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-12">
+        {/* marca + contacto */}
+        <div className="grid content-start gap-5 sm:col-span-2 lg:col-span-4">
+          <div className="flex items-center gap-2 text-white">
+            <Compass className="h-8 w-8" strokeWidth={1.5} />
+            <span className="font-serif text-4xl">sequel</span>
+          </div>
+          <p className="max-w-xs font-serif text-base italic leading-relaxed text-zinc-300">
+            Building digital experiences that inspire, connect, and create lasting value.
+          </p>
+          <ul className="grid gap-2 text-sm">
+            <li className="flex items-center gap-3">
+              <Mail className="h-4 w-4 shrink-0" /> hello@sequel.com
+            </li>
+            <li className="flex items-center gap-3">
+              <Phone className="h-4 w-4 shrink-0" /> +91 00000 00000
+            </li>
+            <li className="flex items-center gap-3">
+              <MapPin className="h-4 w-4 shrink-0" /> India
+            </li>
+          </ul>
+          <div className="flex gap-2">
+            {SOCIALS.map((s) => (
+              <a
+                key={s}
+                href="#"
+                aria-label={s}
+                title={s}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 font-serif text-sm italic text-zinc-300 hover:bg-white/10 hover:text-white"
+              >
+                {s[0]}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* columnas de links */}
+        {LINK_COLUMNS.map((col) => (
+          <div key={col.title} className="grid content-start gap-4 lg:col-span-2">
+            <ColumnHeading>{col.title}</ColumnHeading>
+            <ul className="grid gap-2.5">
+              {col.links.map((link) => (
+                <li key={link}>
+                  <a href="#" className="font-serif text-[15px] hover:text-white hover:underline">
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+        {/* newsletter */}
+        <div className="grid content-start gap-4 sm:col-span-2 lg:col-span-2">
+          <ColumnHeading>Newsletter</ColumnHeading>
+          <p className="font-serif text-[15px] italic leading-relaxed">
+            Subscribe to get updates on new collections, stories &amp; exclusive offers.
+          </p>
+          <form
+            className="flex"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <input
+              type="email"
+              required
+              placeholder="Enter your email"
+              aria-label="Email para newsletter"
+              className="h-11 w-full min-w-0 border border-white/25 bg-transparent px-3 font-serif text-sm italic text-white placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-white/60"
+            />
+            <button
+              type="submit"
+              aria-label="Suscribirse"
+              className="inline-flex h-11 w-12 shrink-0 items-center justify-center bg-amber-100 text-zinc-900 hover:bg-white"
+            >
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* fila legal */}
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 pb-8 font-serif text-sm italic sm:justify-end">
+        <a href="#" className="hover:text-white hover:underline">Privacy Policy</a>
+        <span className="text-zinc-600">|</span>
+        <a href="#" className="hover:text-white hover:underline">Terms of Service</a>
+        <span className="text-zinc-600">|</span>
+        <a href="#" className="hover:text-white hover:underline">Cookie Policy</a>
+      </div>
+
+      {/* tira de imagen procesada, inferior a ancho completo */}
+      <div className="relative h-52 w-full overflow-hidden bg-zinc-900 sm:h-72">
         {result ? (
           <img
             src={result.url}
@@ -31,91 +140,17 @@ export function FooterPreview({ result }: Props) {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center border-2 border-dashed bg-muted/50">
-            <p className="px-4 text-center text-sm text-muted-foreground">
+          <div className="flex h-full w-full items-center justify-center border-t-2 border-dashed border-white/15">
+            <p className="px-4 text-center font-serif text-sm italic text-zinc-500">
               Tu imagen procesada aparecerá aquí en cuanto subas una
             </p>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-4xl flex-col items-center gap-3 px-4 pb-6 text-center">
-          <p className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Tu próximo lanzamiento empieza aquí
+        {result && (
+          <p className="absolute bottom-2 left-3 rounded bg-black/60 px-2 py-0.5 font-mono text-[11px] text-zinc-200">
+            {result.style.name} · {result.width}×{result.height} · {formatBytes(result.size)}
           </p>
-          <p className="max-w-md text-xs text-zinc-300 sm:text-sm">
-            Únete a 12.000 equipos que ya construyen landings que convierten.
-          </p>
-          <div className="flex w-full max-w-sm items-center gap-2">
-            <input
-              type="email"
-              placeholder="tu@email.com"
-              className="h-9 w-full rounded-md border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-white/50"
-            />
-            <button
-              type="button"
-              className="inline-flex h-9 shrink-0 items-center gap-1 rounded-md bg-white px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-200"
-            >
-              Empezar <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* cuerpo del footer */}
-      <div className="w-full bg-zinc-950 text-zinc-400">
-        <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-6">
-          <div className="grid gap-3 lg:col-span-2">
-            <p className="text-base font-bold text-white">Acme Inc.</p>
-            <p className="max-w-xs text-xs leading-relaxed">
-              La plataforma para lanzar landing pages rápidas, ligeras y bonitas.
-              Esta imagen de cabecera pesa {result ? formatBytes(result.size) : "≤ 100 KB"}.
-            </p>
-            <div className="flex gap-2">
-              <a
-                href="#"
-                aria-label="Web"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white"
-              >
-                <Globe className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                aria-label="Email"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white"
-              >
-                <Mail className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-          {COLUMNS.map((col) => (
-            <div key={col.title} className="grid content-start gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-200">
-                {col.title}
-              </p>
-              <ul className="grid gap-2">
-                {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-xs hover:text-white hover:underline">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* barra inferior */}
-        <div className="border-t border-white/10">
-          <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-4 py-4 text-[11px] text-zinc-500 sm:flex-row">
-            <p>© 2026 Acme Inc. Todos los derechos reservados.</p>
-            <p className="font-mono">
-              {result
-                ? `${result.style.name} · ${result.width}×${result.height} · ${formatBytes(result.size)}`
-                : "Hecho con Footer Forge"}
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </footer>
   );
