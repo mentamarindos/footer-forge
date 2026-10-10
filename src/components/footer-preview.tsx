@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { ArrowRight, Compass, Mail, MapPin, Phone } from "lucide-react";
+import { Command } from "lucide-react";
 import type { ProcessResult } from "@/lib/image/pipeline";
 import { useForgeStore } from "@/store/use-forge-store";
 import { cn, formatBytes } from "@/lib/utils";
@@ -24,21 +24,11 @@ function useIsDark(): boolean {
 }
 
 const LINK_COLUMNS: Array<{ title: string; links: string[] }> = [
-  {
-    title: "Shop",
-    links: ["All Collections", "Vases", "Tableware", "Decor", "Limited Editions", "Gift Sets"],
-  },
-  {
-    title: "About Us",
-    links: ["Our Story", "Craftsmanship", "Sustainability", "Careers", "Press & Media"],
-  },
-  {
-    title: "Help & Support",
-    links: ["FAQs", "Shipping & Delivery", "Track Your Order", "Contact Us"],
-  },
+  { title: "Company", links: ["About", "Careers", "Contact"] },
+  { title: "Product", links: ["Features", "Pricing", "Integrations"] },
+  { title: "Resources", links: ["Docs", "Blog", "Guides", "Community"] },
+  { title: "Legal", links: ["Privacy", "Terms", "Cookies", "Security"] },
 ];
-
-const SOCIALS = ["Facebook", "X", "Instagram", "LinkedIn"];
 
 function ColumnHeading({ children }: { children: string }) {
   return (
@@ -103,39 +93,15 @@ export function FooterPreview({ result }: Props) {
       )}
 
       <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 pb-6 pt-12 sm:grid-cols-2 lg:grid-cols-12">
-        {/* marca + contacto */}
+        {/* marca */}
         <div className="grid content-start gap-5 sm:col-span-2 lg:col-span-4">
           <div className="flex items-center gap-2 text-zinc-900 dark:text-white">
-            <Compass className="h-8 w-8" strokeWidth={1.5} />
-            <span className="font-serif text-4xl">sequel</span>
+            <Command className="h-7 w-7" strokeWidth={2} />
+            <span className="text-2xl font-bold tracking-tight">Acme</span>
           </div>
           <p className="max-w-xs font-serif text-base italic leading-relaxed">
-            Building digital experiences that inspire, connect, and create lasting value.
+            Helping teams build, ship, and scale modern digital products.
           </p>
-          <ul className="grid gap-2 text-sm">
-            <li className="flex items-center gap-3">
-              <Mail className="h-4 w-4 shrink-0" /> hello@sequel.com
-            </li>
-            <li className="flex items-center gap-3">
-              <Phone className="h-4 w-4 shrink-0" /> +91 00000 00000
-            </li>
-            <li className="flex items-center gap-3">
-              <MapPin className="h-4 w-4 shrink-0" /> India
-            </li>
-          </ul>
-          <div className="flex gap-2">
-            {SOCIALS.map((s) => (
-              <a
-                key={s}
-                href="#"
-                aria-label={s}
-                title={s}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-900/15 font-serif text-sm italic hover:bg-zinc-900/5 hover:text-zinc-900 dark:border-white/15 dark:hover:bg-white/10 dark:hover:text-white"
-              >
-                {s[0]}
-              </a>
-            ))}
-          </div>
         </div>
 
         {/* columnas de links */}
@@ -153,42 +119,11 @@ export function FooterPreview({ result }: Props) {
             </ul>
           </div>
         ))}
-
-        {/* newsletter */}
-        <div className="grid content-start gap-4 sm:col-span-2 lg:col-span-2">
-          <ColumnHeading>Newsletter</ColumnHeading>
-          <p className="font-serif text-[15px] italic leading-relaxed">
-            Subscribe to get updates on new collections, stories &amp; exclusive offers.
-          </p>
-          <form
-            className="flex"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              required
-              placeholder="Enter your email"
-              aria-label="Email para newsletter"
-              className="h-11 w-full min-w-0 border border-zinc-900/25 bg-transparent px-3 font-serif text-sm italic text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-900/40 dark:border-white/25 dark:text-white dark:placeholder:text-zinc-400 dark:focus:ring-white/60"
-            />
-            <button
-              type="submit"
-              aria-label="Suscribirse"
-              className="inline-flex h-11 w-12 shrink-0 items-center justify-center bg-zinc-900 text-amber-50 transition-colors hover:bg-zinc-700 dark:bg-amber-100 dark:text-zinc-900 dark:hover:bg-white"
-            >
-              <ArrowRight className="h-5 w-5" />
-            </button>
-          </form>
-        </div>
       </div>
 
-      {/* fila legal */}
-      <div className="relative mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 pb-10 font-serif text-sm italic text-zinc-500 sm:justify-end dark:text-zinc-400">
-        <a href="#" className="hover:text-zinc-900 hover:underline dark:hover:text-white dark:hover:underline">Privacy Policy</a>
-        <span className="text-zinc-400 dark:text-zinc-600">|</span>
-        <a href="#" className="hover:text-zinc-900 hover:underline dark:hover:text-white dark:hover:underline">Terms of Service</a>
-        <span className="text-zinc-400 dark:text-zinc-600">|</span>
-        <a href="#" className="hover:text-zinc-900 hover:underline dark:hover:text-white dark:hover:underline">Cookie Policy</a>
+      {/* barra inferior */}
+      <div className="relative mx-auto w-full max-w-6xl px-4 pb-10 pt-2 text-center font-serif text-sm italic text-zinc-500 dark:text-zinc-400">
+        2026 Acme Inc. All rights reserved.
       </div>
 
       {/* chapita con datos del procesado */}
