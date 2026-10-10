@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Compass } from "lucide-react";
 import { Toaster } from "sonner";
 import { ActionBar } from "@/components/action-bar";
@@ -33,6 +33,28 @@ export default function App() {
   }, [dark]);
 
   useAutoProcess();
+
+  // imagen demo por defecto (una sola vez por sesión; respetar "quitar")
+  const defaultLoaded = useRef(false);
+  useEffect(() => {
+    if (defaultLoaded.current) return;
+    defaultLoaded.current = true;
+    if (useForgeStore.getState().file) return;
+    fetch("default-footer.jpg")
+      .then((res) => {
+        if (!res.ok) throw new Error(`default ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        if (useForgeStore.getState().file) return;
+        useForgeStore.getState().pickFile(
+          new File([blob], "default-footer.jpg", { type: blob.type || "image/jpeg" })
+        );
+      })
+      .catch(() => {
+        /* sin demo no pasa nada: el dropzone queda vacío */
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
