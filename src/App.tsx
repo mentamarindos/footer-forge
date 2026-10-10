@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Toaster } from "sonner";
 import { FooterArtUploader } from "@/components/footer-art-uploader";
+import { FooterPreview } from "@/components/footer-preview";
 import { Button } from "@/components/ui/button";
+import type { ProcessResult } from "@/lib/image/pipeline";
 
 function useTheme() {
   const [dark, setDark] = useState<boolean>(() => {
@@ -21,6 +23,15 @@ function useTheme() {
 
 export default function App() {
   const { dark, toggle } = useTheme();
+  const [preview, setPreview] = useState<ProcessResult | null>(null);
+
+  // estable: no recrea el callback → no reinicia el debounce del uploader
+  const handleProcessed = useCallback((r: ProcessResult) => {
+    setPreview((prev) => {
+      if (prev && prev !== r) URL.revokeObjectURL(prev.url);
+      return r;
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -36,10 +47,11 @@ export default function App() {
           <p className="mx-auto max-w-xl text-sm text-muted-foreground">
             Convierte cualquier imagen en arte liviano para footers de landing pages:
             8 estilos adaptativos, compresión automática a ≤ 100 KB y salida WebP.
+            El resultado se previsualiza abajo en un footer real a ancho completo.
           </p>
         </header>
 
-        <FooterArtUploader />
+        <FooterArtUploader showFooterPreview={false} onProcessed={handleProcessed} />
 
         <section className="rounded-xl border bg-muted/50 p-4 text-xs text-muted-foreground">
           <p className="break-all font-mono">
@@ -47,6 +59,9 @@ export default function App() {
           </p>
         </section>
       </main>
+
+      {/* footer real a 100% del ancho, alimentado en vivo */}
+      <FooterPreview result={preview} />
     </div>
   );
 }
