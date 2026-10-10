@@ -47,7 +47,7 @@ export function StylePicker() {
               title={s.description}
               onClick={() => setStyle(s.id)}
               className={cn(
-                "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[13px] font-medium",
+                "flex flex-col items-center gap-1 rounded-lg border px-2 py-2.5 text-center",
                 "transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                 "active:scale-95",
                 isActive
@@ -56,7 +56,7 @@ export function StylePicker() {
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{s.name}</span>
+              <span className="text-[11px] font-medium leading-tight">{s.name}</span>
             </button>
           );
         })}

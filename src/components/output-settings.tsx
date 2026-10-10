@@ -52,7 +52,7 @@ export function OutputSettings() {
           })}
         </div>
       </div>
-      <div className="grid gap-1.5">
+      <div className="grid gap-1.5 border-t border-border/50 pt-3">
         <Label className="text-xs">Formato</Label>        <div className="grid grid-cols-3 gap-1 rounded-lg border bg-muted p-1" role="group" aria-label="Formato de salida">
           {FORMATS.map((f) => {
             const isActive = f.value === format;
@@ -84,7 +84,7 @@ export function OutputSettings() {
           Para fotos usa WebP o JPEG.
         </p>
       )}
-      <div className="grid gap-1.5">
+      <div className="grid gap-1.5 border-t border-border/50 pt-3">
         <Label className="text-xs">Límite de peso</Label>
         <div className="grid grid-cols-4 gap-1 rounded-lg border bg-muted p-1" role="group" aria-label="Límite de peso">
           {LIMITS.map((limit) => {

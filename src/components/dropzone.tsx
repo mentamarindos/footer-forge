@@ -64,8 +64,8 @@ export function Dropzone() {
             className="h-12 w-12 shrink-0 rounded-lg border object-cover"
           />
           <div className="grid min-w-0 flex-1 gap-0.5">
-            <p className="truncate text-sm font-medium">{file.name}</p>
-            <p className="font-mono text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+            <p className="truncate text-sm font-medium" title={file.name}>{file.name}</p>
+            <p className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatBytes(file.size)}</p>
           </div>
           <button
             type="button"

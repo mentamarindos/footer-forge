@@ -42,11 +42,11 @@ export function ActionBar() {
           )}
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="grid gap-2">
         <Button
           onClick={() => void run()}
           disabled={processing}
-          className="transition-transform duration-150 active:scale-95"
+          className="w-full transition-transform duration-150 active:scale-95"
         >
           {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCw className="h-4 w-4" />}
           {result ? "Reprocesar" : "Procesar"}
@@ -55,7 +55,7 @@ export function ActionBar() {
           variant="secondary"
           onClick={download}
           disabled={!result}
-          className="transition-all duration-150 hover:-translate-y-px active:scale-95"
+          className="w-full transition-all duration-150 hover:-translate-y-px active:scale-95"
         >
           <Download className="h-4 w-4" /> Descargar ({result ? formatBytes(result.size) : "—"})
         </Button>

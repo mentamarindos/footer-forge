@@ -72,14 +72,14 @@ export function StyleControls() {
           return null;
         }
         return (
-          <div key={p.key} className="flex items-center justify-between gap-3">
+          <div key={p.key} className="flex items-center justify-between gap-3 py-0.5">
             <Label htmlFor={p.key} className="text-xs">{p.label}</Label>
             <input
               id={p.key}
               type="color"
               value={String(current)}
               onChange={(e) => updateParam(p.key, e.target.value)}
-              className="h-7 w-12 cursor-pointer rounded border bg-background transition-transform duration-150 hover:scale-105"
+              className="h-8 w-16 cursor-pointer rounded-md border bg-background transition-transform duration-150 hover:scale-105"
             />
           </div>
         );
