@@ -80,8 +80,8 @@ export function FooterPreview({ result }: Props) {
             src={result.url}
             alt=""
             aria-hidden
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-200"
-            style={{ transform: `scale(${previewZoom})` }}
+            className="absolute inset-0 h-full w-full object-cover object-bottom transition-transform duration-200"
+            style={{ transform: `scale(${previewZoom})`, transformOrigin: "bottom center" }}
           />
           {/* velo inteligente: en dark nace negro y se funde abajo; en light aclara */}
           {previewBlur && (
