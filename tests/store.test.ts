@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import { DEFAULT_MAX_BYTES, useForgeStore } from "@/store/use-forge-store";
+import { DEFAULT_MAX_BYTES, DEFAULT_WIDTH, WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
 
 function fakeFile(name = "foto.png", size = 2048): File {
   return new File([new Uint8Array(size)], name, { type: "image/png" });
@@ -15,13 +15,21 @@ describe("forge store: estado inicial", () => {
   test("defaults", () => {
     const s = useForgeStore.getState();
     expect(s.styleId).toBe("pixel-art");
-    expect(s.width).toBe(640);
+    expect(s.width).toBe(DEFAULT_WIDTH);
     expect(s.maxBytes).toBe(DEFAULT_MAX_BYTES);
     expect(s.format).toBe("image/webp");
     expect(s.file).toBeNull();
     expect(s.result).toBeNull();
     expect(s.processing).toBe(false);
     expect(s.availableStyles.length).toBe(8);
+  });
+
+  test("presets cubren de mobile a 4K en orden", () => {
+    const widths = WIDTH_PRESETS.map((p) => p.width);
+    expect(widths[0]).toBeLessThanOrEqual(480);
+    expect(widths[widths.length - 1]).toBeGreaterThanOrEqual(3840);
+    expect([...widths].sort((a, b) => a - b)).toEqual(widths);
+    expect(WIDTH_PRESETS.map((p) => p.id)).toContain("mobile");
   });
 });
 

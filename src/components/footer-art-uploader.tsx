@@ -33,7 +33,7 @@ export interface FooterArtUploaderProps {
 export function FooterArtUploader({
   defaultStyle = "pixel-art",
   availableStyles,
-  targetWidth = 640,
+  targetWidth = 1280,
   maxBytes = 102_400,
   output = "image/webp",
   onProcessed,

@@ -9,6 +9,25 @@ import { formatBytes } from "@/lib/utils";
 
 export type OutputFormat = "image/webp" | "image/jpeg" | "image/png";
 
+export interface WidthPreset {
+  id: string;
+  label: string;
+  width: number;
+  hint: string;
+}
+
+/** Anchos de salida por tamaño de pantalla, de mobile a 4K. */
+export const WIDTH_PRESETS: WidthPreset[] = [
+  { id: "mobile", label: "Mobile", width: 480, hint: "≤480p" },
+  { id: "tablet", label: "Tablet", width: 768, hint: "768p" },
+  { id: "laptop", label: "Laptop", width: 1280, hint: "720p" },
+  { id: "desktop", label: "Desktop", width: 1920, hint: "1080p" },
+  { id: "qhd", label: "QHD", width: 2560, hint: "1440p" },
+  { id: "uhd", label: "4K", width: 3840, hint: "2160p" },
+];
+
+export const DEFAULT_WIDTH = 1280;
+
 export interface ForgeConfig {
   defaultStyle?: string;
   availableStyles?: string[];
@@ -62,7 +81,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   fileKey: 0,
   styleId: "pixel-art",
   params: getDefaultParams("pixel-art"),
-  width: 640,
+  width: DEFAULT_WIDTH,
   format: "image/webp",
   maxBytes: DEFAULT_MAX_BYTES,
   availableStyles: STYLE_LIST.map((s) => s.id),
@@ -79,7 +98,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
     set({
       styleId,
       params: getDefaultParams(styleId),
-      width: cfg.targetWidth ?? 640,
+      width: cfg.targetWidth ?? DEFAULT_WIDTH,
       maxBytes: cfg.maxBytes ?? DEFAULT_MAX_BYTES,
       format: cfg.output ?? "image/webp",
       availableStyles: available,
