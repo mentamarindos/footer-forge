@@ -13,7 +13,8 @@
         "sonner",
         "lucide-react",
         "heic-to",
-        "utif"
+        "utif",
+        "zustand"
       ],
       "registryDependencies": [
         "button",
@@ -70,6 +71,11 @@
           "target": "lib/image/styles/index.ts"
         },
         {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/store/use-forge-store.ts",
+          "type": "registry:lib",
+          "target": "store/use-forge-store.ts"
+        },
+        {
           "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/format-badge.tsx",
           "type": "registry:component",
           "target": "components/format-badge.tsx"
@@ -83,6 +89,36 @@
           "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/footer-art-uploader.tsx",
           "type": "registry:component",
           "target": "components/footer-art-uploader.tsx"
+        },
+        {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/dropzone.tsx",
+          "type": "registry:component",
+          "target": "components/dropzone.tsx"
+        },
+        {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/style-picker.tsx",
+          "type": "registry:component",
+          "target": "components/style-picker.tsx"
+        },
+        {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/compare-view.tsx",
+          "type": "registry:component",
+          "target": "components/compare-view.tsx"
+        },
+        {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/output-settings.tsx",
+          "type": "registry:component",
+          "target": "components/output-settings.tsx"
+        },
+        {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/action-bar.tsx",
+          "type": "registry:component",
+          "target": "components/action-bar.tsx"
+        },
+        {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/footer-preview.tsx",
+          "type": "registry:component",
+          "target": "components/footer-preview.tsx"
         }
       ]
     }

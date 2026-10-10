@@ -1,51 +1,71 @@
 # Footer Forge
 
-Convierte **cualquier imagen** en arte liviano para **footers de landing pages**:
-aplica un estilo y comprime automáticamente a **≤ 100 KB** (WebP por defecto).
+Turn **any image** into lightweight art for **landing page footers**:
+pick a style and it auto-compresses to **≤ 100 KB** (WebP by default).
 
-## Estilos adaptativos (8)
+## Adaptive styles (8)
 
-| Estilo | Ideal para |
+| Style | Best for |
 |---|---|
-| **Pixel Art** | Retro gaming, marca juguetona |
-| **Frosted Mosaic** | Vidrio esmerilado con glow cálido, look galería |
-| **Posterize** | Look plano moderno |
-| **Duotono** | Colores de marca (5 presets + custom) |
-| **Grises** | Elegante, mínimo peso |
-| **Dither** | Tramado Bayer 1-bit retro |
-| **Footer Fade** | Foto + texto encima (el más útil en landings) |
-| **Blur fondo** | Fondo tenue sin distraer |
+| **Pixel Art** | Retro gaming, playful brands |
+| **Frosted Mosaic** | Frosted glass with warm glow, gallery look |
+| **Posterize** | Modern flat look |
+| **Duotone** | Brand colors (5 presets + custom) |
+| **Grayscale** | Elegant, minimal weight |
+| **Dither** | Retro 1-bit Bayer pattern |
+| **Footer Fade** | Photo + text overlay (most useful in landings) |
+| **Blur background** | Muted backdrop that doesn't distract |
 
-Cada estilo declara su propio schema de parámetros (`slider` / `select` / `color`)
-y la UI genera los controles sola → **agregar un estilo nuevo = 1 objeto** en
+Each style declares its own parameter schema (`slider` / `select` / `color`)
+and the UI renders the controls by itself → **adding a new style = 1 object** in
 `src/lib/image/styles/`.
 
-## Formatos de entrada
+## Input formats
 
-JPEG, PNG, WebP, AVIF, GIF (1er frame), BMP, ICO, SVG,
-TIFF (vía `utif`, lazy) y HEIC/HEIF (vía `heic-to`, lazy).
-La detección es por **magic bytes**, no por extensión.
+JPEG, PNG, WebP, AVIF, GIF (1st frame), BMP, ICO, SVG,
+TIFF (via `utif`, lazy) and HEIC/HEIF (via `heic-to`, lazy).
+Detection is by **magic bytes**, not file extension.
 
-## Uso local (Bun)
+## Local usage (Bun)
 
 ```bash
 cd footer-forge
 bun install
-bun run dev     # servidor local
-bun test        # 22 tests (estilos + utils)
+bun run dev     # local server
+bun test        # 32 tests (styles + utils + store)
 bun run build   # tsc + vite build
 bun run lint    # oxlint
 ```
 
-Requiere [Bun](https://bun.sh) ≥ 1.0.
+Requires [Bun](https://bun.sh) ≥ 1.0.
 
-## Instalar como componente shadcn
+## Architecture
+
+Global state with [Zustand](https://zustand.docs.pmnd.rs) (`src/store/use-forge-store.ts`):
+image, style, params, output and result live in a single store;
+`useAutoProcess()` reprocesses with debounce on any change.
+
+Specialized components (`src/components/`), each subscribed
+only to its store slice:
+
+| Component | Responsibility |
+|---|---|
+| `dropzone` | upload + thumbnail + remove/change |
+| `style-picker` | icon style toggles |
+| `style-controls` | sliders/selects/color from the active schema |
+| `compare-view` | before/after + status badges |
+| `output-settings` | width + format |
+| `action-bar` | reprocess/download + limit status |
+| `footer-preview` | live full-width footer mock |
+| `footer-art-uploader` | installable composition (shadcn registry) |
+
+## Install as a shadcn component
 
 ```bash
 npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art-uploader.json
 ```
 
-Uso:
+Usage:
 
 ```tsx
 import { FooterArtUploader } from "@/components/footer-art-uploader";
@@ -60,31 +80,31 @@ import { FooterArtUploader } from "@/components/footer-art-uploader";
 />
 ```
 
-## Cómo funciona el pipeline
+## How the pipeline works
 
 ```
-archivo → sniff magic bytes → decode (bitmap | img | utif | heic-to | svg)
-  → resize a targetWidth → style.apply(ImageData) → compress loop
-  (quality 0.92→0.32, escala ×0.85 hasta ≤ maxBytes) → blob + download
+file → magic-bytes sniff → decode (bitmap | img | utif | heic-to | svg)
+  → resize to targetWidth → style.apply(ImageData) → compress loop
+  (quality 0.92→0.32, ×0.85 scale until ≤ maxBytes) → blob + download
 ```
 
-## Añadir un estilo nuevo
+## Adding a new style
 
 ```ts
-// src/lib/image/styles/mi-estilo.ts
+// src/lib/image/styles/my-style.ts
 import type { StyleDefinition } from "./types";
 
-export const miEstilo: StyleDefinition = {
-  id: "mi-estilo",
-  name: "Mi estilo",
+export const myStyle: StyleDefinition = {
+  id: "my-style",
+  name: "My style",
   description: "...",
   params: [
-    { key: "fuerza", label: "Fuerza", type: "slider", min: 0, max: 100, step: 1, defaultValue: 50, unit: "%" },
+    { key: "strength", label: "Strength", type: "slider", min: 0, max: 100, step: 1, defaultValue: 50, unit: "%" },
   ],
   apply(input, params) {
-    // transforma y devuelve un ImageData nuevo
+    // transform and return a NEW ImageData
     return input;
   },
 };
-// + regístralo en src/lib/image/styles/index.ts
+// + register it in src/lib/image/styles/index.ts
 ```

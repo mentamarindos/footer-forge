@@ -24,3 +24,10 @@ class ImageDataPolyfill {
 }
 
 (globalThis as unknown as { ImageData: unknown }).ImageData = ImageDataPolyfill;
+
+// URL Blob (navegador) para tests del store
+if (typeof URL.createObjectURL !== "function") {
+  let n = 0;
+  (URL as unknown as { createObjectURL: () => string }).createObjectURL = () => `blob:mock-${++n}`;
+  (URL as unknown as { revokeObjectURL: () => void }).revokeObjectURL = () => {};
+}

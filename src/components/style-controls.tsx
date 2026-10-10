@@ -1,30 +1,29 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import type { StyleDefinition, StyleParams } from "@/lib/image/styles/types";
+import { getStyle } from "@/lib/image/styles";
+import { useForgeStore } from "@/store/use-forge-store";
 
-interface Props {
-  style: StyleDefinition;
-  values: StyleParams;
-  onChange: (next: StyleParams) => void;
-}
+/** Controles generados del schema del estilo activo (adaptativo, desde el store). */
+export function StyleControls() {
+  const styleId = useForgeStore((s) => s.styleId);
+  const values = useForgeStore((s) => s.params);
+  const updateParam = useForgeStore((s) => s.updateParam);
+  const file = useForgeStore((s) => s.file);
 
-/** Renderiza controles automáticamente según el schema de cada estilo (adaptativo). */
-export function StyleControls({ style, values, onChange }: Props) {
-  if (style.params.length === 0) return null;
-
-  const set = (key: string, v: number | string) => onChange({ ...values, [key]: v });
+  const style = getStyle(styleId);
+  if (!file || style.params.length === 0) return null;
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3">
       {style.params.map((p) => {
         const current = values[p.key] ?? p.defaultValue;
         if (p.type === "slider") {
           return (
-            <div key={p.key} className="grid gap-2">
+            <div key={p.key} className="grid gap-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor={p.key}>{p.label}</Label>
-                <span className="font-mono text-xs text-muted-foreground">
+                <Label htmlFor={p.key} className="text-xs">{p.label}</Label>
+                <span className="font-mono text-[11px] text-muted-foreground">
                   {String(current)}{p.unit ?? ""}
                 </span>
               </div>
@@ -34,18 +33,17 @@ export function StyleControls({ style, values, onChange }: Props) {
                 max={p.max}
                 step={p.step}
                 value={[Number(current)]}
-                onValueChange={([v]) => set(p.key, v)}
+                onValueChange={([v]) => updateParam(p.key, v)}
               />
             </div>
           );
         }
         if (p.type === "select") {
-          // Oculta colorA/B salvo preset custom (solo duotono)
           return (
-            <div key={p.key} className="grid gap-2">
-              <Label>{p.label}</Label>
-              <Select value={String(current)} onValueChange={(v) => set(p.key, v)}>
-                <SelectTrigger>
+            <div key={p.key} className="grid gap-1.5">
+              <Label className="text-xs">{p.label}</Label>
+              <Select value={String(current)} onValueChange={(v) => updateParam(p.key, v)}>
+                <SelectTrigger className="h-8 text-[13px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -59,19 +57,18 @@ export function StyleControls({ style, values, onChange }: Props) {
             </div>
           );
         }
-        // color
         if (style.id === "duotone" && values["preset"] !== "custom" && (p.key === "colorA" || p.key === "colorB")) {
           return null;
         }
         return (
           <div key={p.key} className="flex items-center justify-between gap-3">
-            <Label htmlFor={p.key}>{p.label}</Label>
+            <Label htmlFor={p.key} className="text-xs">{p.label}</Label>
             <input
               id={p.key}
               type="color"
               value={String(current)}
-              onChange={(e) => set(p.key, e.target.value)}
-              className="h-8 w-14 cursor-pointer rounded border bg-background"
+              onChange={(e) => updateParam(p.key, e.target.value)}
+              className="h-7 w-12 cursor-pointer rounded border bg-background transition-transform duration-150 hover:scale-105"
             />
           </div>
         );

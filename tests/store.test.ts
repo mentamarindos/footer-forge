@@ -1,0 +1,112 @@
+import { beforeEach, describe, expect, test } from "bun:test";
+import { DEFAULT_MAX_BYTES, useForgeStore } from "@/store/use-forge-store";
+
+function fakeFile(name = "foto.png", size = 2048): File {
+  return new File([new Uint8Array(size)], name, { type: "image/png" });
+}
+
+beforeEach(() => {
+  const s = useForgeStore.getState();
+  s.clearFile();
+  s.configure({});
+});
+
+describe("forge store: estado inicial", () => {
+  test("defaults", () => {
+    const s = useForgeStore.getState();
+    expect(s.styleId).toBe("pixel-art");
+    expect(s.width).toBe(640);
+    expect(s.maxBytes).toBe(DEFAULT_MAX_BYTES);
+    expect(s.format).toBe("image/webp");
+    expect(s.file).toBeNull();
+    expect(s.result).toBeNull();
+    expect(s.processing).toBe(false);
+    expect(s.availableStyles.length).toBe(8);
+  });
+});
+
+describe("forge store: configure", () => {
+  test("aplica config y resuelve estilos disponibles", () => {
+    useForgeStore.getState().configure({
+      defaultStyle: "duotone",
+      availableStyles: ["duotone", "blur", "inexistente"],
+      targetWidth: 800,
+      maxBytes: 50_000,
+      output: "image/jpeg",
+    });
+    const s = useForgeStore.getState();
+    expect(s.styleId).toBe("duotone");
+    expect(s.availableStyles).toEqual(["duotone", "blur"]);
+    expect(s.width).toBe(800);
+    expect(s.maxBytes).toBe(50_000);
+    expect(s.format).toBe("image/jpeg");
+    expect(s.params["preset"]).toBe("ink-paper");
+  });
+
+  test("defaultStyle fuera de la lista cae al primero disponible", () => {
+    useForgeStore.getState().configure({
+      defaultStyle: "pixel-art",
+      availableStyles: ["blur"],
+    });
+    expect(useForgeStore.getState().styleId).toBe("blur");
+  });
+});
+
+describe("forge store: acciones", () => {
+  test("pickFile guarda archivo y genera URL, limpiando el resultado", () => {
+    const s = useForgeStore.getState();
+    s.pickFile(fakeFile());
+    const next = useForgeStore.getState();
+    expect(next.file?.name).toBe("foto.png");
+    expect(next.originalUrl?.startsWith("blob:")).toBe(true);
+    expect(next.result).toBeNull();
+  });
+
+  test("pickFile(null) no hace nada", () => {
+    useForgeStore.getState().pickFile(null);
+    expect(useForgeStore.getState().file).toBeNull();
+  });
+
+  test("setStyle cambia estilo y resetea params", () => {
+    const s = useForgeStore.getState();
+    s.updateParam("blockSize", 32);
+    s.setStyle("posterize");
+    const next = useForgeStore.getState();
+    expect(next.styleId).toBe("posterize");
+    expect(next.params).toEqual({ levels: 4 });
+  });
+
+  test("setStyle ignora ids no disponibles", () => {
+    useForgeStore.getState().configure({ availableStyles: ["blur"] });
+    useForgeStore.getState().setStyle("duotone");
+    expect(useForgeStore.getState().styleId).toBe("blur");
+  });
+
+  test("updateParam fusiona sin borrar el resto", () => {
+    const s = useForgeStore.getState();
+    s.setStyle("pixel-art");
+    s.updateParam("blockSize", 16);
+    expect(useForgeStore.getState().params).toEqual({ blockSize: 16, colors: 24 });
+  });
+
+  test("setWidth / setFormat / setDragOver", () => {
+    const s = useForgeStore.getState();
+    s.setWidth(320);
+    s.setFormat("image/png");
+    s.setDragOver(true);
+    const next = useForgeStore.getState();
+    expect(next.width).toBe(320);
+    expect(next.format).toBe("image/png");
+    expect(next.dragOver).toBe(true);
+  });
+
+  test("clearFile limpia todo", () => {
+    const s = useForgeStore.getState();
+    s.pickFile(fakeFile());
+    s.clearFile();
+    const next = useForgeStore.getState();
+    expect(next.file).toBeNull();
+    expect(next.originalUrl).toBeNull();
+    expect(next.result).toBeNull();
+  });
+});
