@@ -16,6 +16,9 @@ export interface ProcessResult {
   url: string;
   width: number;
   height: number;
+  /** Dimensiones pedidas antes de comprimir (pueden diferir si se redujo). */
+  requestedWidth: number;
+  requestedHeight: number;
   size: number;
   mime: string;
   quality: number;
@@ -78,6 +81,8 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
     url,
     width: c.finalWidth,
     height: c.finalHeight,
+    requestedWidth: w,
+    requestedHeight: h,
     size: c.blob.size,
     mime: c.mime,
     quality: c.quality,

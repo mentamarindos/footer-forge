@@ -74,6 +74,7 @@ interface ForgeState {
   updateParam: (key: string, value: number | string) => void;
   setWidth: (w: number) => void;
   setFormat: (f: OutputFormat) => void;
+  setMaxBytes: (b: number) => void;
   setDragOver: (v: boolean) => void;
   setPreviewHeight: (h: number) => void;
   setPreviewWidth: (w: number | null) => void;
@@ -208,6 +209,7 @@ export const useForgeStore = create<ForgeState>()(
   updateParam: (key, value) => set((s) => ({ params: { ...s.params, [key]: value } })),
   setWidth: (width) => set({ width }),
   setFormat: (format) => set({ format }),
+  setMaxBytes: (maxBytes) => set({ maxBytes }),
   setDragOver: (dragOver) => set({ dragOver }),
   setPreviewHeight: (previewHeight) => set({ previewHeight }),
   setPreviewWidth: (previewWidth) => set({ previewWidth }),

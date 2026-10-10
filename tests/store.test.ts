@@ -128,16 +128,18 @@ describe("forge store: acciones", () => {
     });
   });
 
-  test("setWidth / setFormat / setDragOver / setPreviewHeight / setPreviewWidth", () => {
+  test("setWidth / setFormat / setMaxBytes / setDragOver / setPreviewHeight / setPreviewWidth", () => {
     const s = useForgeStore.getState();
     s.setWidth(320);
     s.setFormat("image/png");
+    s.setMaxBytes(256_000);
     s.setDragOver(true);
     s.setPreviewHeight(800);
     s.setPreviewWidth(900);
     const next = useForgeStore.getState();
     expect(next.width).toBe(320);
     expect(next.format).toBe("image/png");
+    expect(next.maxBytes).toBe(256_000);
     expect(next.dragOver).toBe(true);
     expect(next.previewHeight).toBe(800);
     expect(next.previewWidth).toBe(900);

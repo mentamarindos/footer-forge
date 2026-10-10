@@ -13,6 +13,7 @@ export function CompareView() {
   const result = useForgeStore((s) => s.result);
   const processing = useForgeStore((s) => s.processing);
   const styleId = useForgeStore((s) => s.styleId);
+  const maxBytes = useForgeStore((s) => s.maxBytes);
 
   if (!file) {
     return (
@@ -72,14 +73,23 @@ export function CompareView() {
           )}
         </div>
         {result && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <FormatBadge mime={result.mime} />
-            <Badge variant="outline" className="font-mono text-[11px]">
-              {result.width}×{result.height}
-            </Badge>
-            <Badge variant={result.underLimit ? "default" : "destructive"} className="font-mono text-[11px]">
-              {formatBytes(result.size)}
-            </Badge>
+          <div className="grid gap-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <FormatBadge mime={result.mime} />
+              <Badge variant="outline" className="font-mono text-[11px]">
+                {result.width}×{result.height}
+              </Badge>
+              <Badge variant={result.underLimit ? "default" : "destructive"} className="font-mono text-[11px]">
+                {formatBytes(result.size)}
+              </Badge>
+            </div>
+            {(result.width < result.requestedWidth || result.height < result.requestedHeight) && (
+              <p className="animate-fade-in text-[11px] text-muted-foreground">
+                Pedidos {result.requestedWidth}×{result.requestedHeight}px → reducidos a{" "}
+                {result.width}×{result.height}px para caber en {formatBytes(maxBytes)}.
+                Sube el límite o baja el ancho para más calidad.
+              </p>
+            )}
           </div>
         )}
       </figure>

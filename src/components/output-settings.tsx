@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import type { OutputFormat } from "@/store/use-forge-store";
 import { WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
-import { cn } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
 
 const FORMATS: Array<{ value: OutputFormat; label: string }> = [
   { value: "image/webp", label: "WebP" },
@@ -9,12 +9,16 @@ const FORMATS: Array<{ value: OutputFormat; label: string }> = [
   { value: "image/png", label: "PNG" },
 ];
 
+const LIMITS = [51_200, 102_400, 256_000, 512_000];
+
 /** Ancho por presets de pantalla + formato segmentado. */
 export function OutputSettings() {
   const width = useForgeStore((s) => s.width);
   const format = useForgeStore((s) => s.format);
+  const maxBytes = useForgeStore((s) => s.maxBytes);
   const setWidth = useForgeStore((s) => s.setWidth);
   const setFormat = useForgeStore((s) => s.setFormat);
+  const setMaxBytes = useForgeStore((s) => s.setMaxBytes);
 
   return (
     <div className="grid gap-3">
@@ -70,6 +74,33 @@ export function OutputSettings() {
                 )}
               >
                 {f.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="grid gap-1.5">
+        <Label className="text-xs">Límite de peso</Label>
+        <div className="grid grid-cols-4 gap-1 rounded-lg border bg-muted p-1" role="group" aria-label="Límite de peso">
+          {LIMITS.map((limit) => {
+            const isActive = limit === maxBytes;
+            return (
+              <button
+                key={limit}
+                type="button"
+                aria-pressed={isActive}
+                title={`Máximo ${formatBytes(limit)}`}
+                onClick={() => setMaxBytes(limit)}
+                className={cn(
+                  "rounded-md px-1 py-1.5 font-mono text-[11px] font-medium transition-all duration-150",
+                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  "active:scale-95",
+                  isActive
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {formatBytes(limit).replace(" ", "")}
               </button>
             );
           })}
