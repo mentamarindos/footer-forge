@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "footer-forge",
+  "homepage": "https://github.com/mentamarindos/footer-forge",
+  "items": [
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "footer-art-uploader",
+      "type": "registry:component",
+      "title": "Footer Art Uploader",
+      "description": "Sube cualquier imagen, aplica 7 estilos adaptativos (pixel-art, duotono, fade…) y comprime a ≤100KB para footers.",
+      "dependencies": ["sonner", "lucide-react", "heic-to", "utif"],
+      "registryDependencies": ["button", "card", "slider", "select", "label", "badge"],
+      "files": [
+        { "path": "lib/utils.ts", "type": "registry:lib", "target": "lib/utils.ts" },
+        { "path": "lib/image/decode-image.ts", "type": "registry:lib", "target": "lib/image/decode-image.ts" },
+        { "path": "lib/image/compress-to-limit.ts", "type": "registry:lib", "target": "lib/image/compress-to-limit.ts" },
+        { "path": "lib/image/pipeline.ts", "type": "registry:lib", "target": "lib/image/pipeline.ts" },
+        { "path": "lib/image/styles/types.ts", "type": "registry:lib", "target": "lib/image/styles/types.ts" },
+        { "path": "lib/image/styles/pixel-art.ts", "type": "registry:lib", "target": "lib/image/styles/pixel-art.ts" },
+        { "path": "lib/image/styles/classic.ts", "type": "registry:lib", "target": "lib/image/styles/classic.ts" },
+        { "path": "lib/image/styles/index.ts", "type": "registry:lib", "target": "lib/image/styles/index.ts" },
+        { "path": "components/format-badge.tsx", "type": "registry:component", "target": "components/format-badge.tsx" },
+        { "path": "components/style-controls.tsx", "type": "registry:component", "target": "components/style-controls.tsx" },
+        { "path": "components/footer-art-uploader.tsx", "type": "registry:component", "target": "components/footer-art-uploader.tsx" }
+      ]
+    }
+  ]
+}
