@@ -116,7 +116,7 @@ export default function App() {
       </header>
 
       <main className="mx-auto grid w-full max-w-[1400px] gap-4 px-4 py-5 lg:grid-cols-[330px_minmax(0,1fr)]">
-        {/* sidebar: entrada + estilo + salida */}
+        {/* sidebar: entrada + estilo + exportar */}
         <aside className="grid content-start gap-4">
           <Card>
             <CardHeader className="pb-2">
@@ -138,15 +138,20 @@ export default function App() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-[13px]">Salida</CardTitle>
+              <CardTitle className="text-[13px]">Exportar</CardTitle>
             </CardHeader>
             <CardContent>
-              <OutputSettings />
+              <ActionBar />
+              {!file && (
+                <p className="text-xs text-muted-foreground">
+                  Aquí verás el peso final y la descarga en cuanto subas una imagen.
+                </p>
+              )}
             </CardContent>
           </Card>
         </aside>
 
-        {/* workspace: ajustes + exportar (el resultado vive en el footer) */}
+        {/* workspace: ajustes + salida (el resultado vive en el footer) */}
         <section className="grid content-start gap-4">
           <Card>
             <CardHeader className="pb-2">
@@ -164,15 +169,10 @@ export default function App() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-[13px]">Exportar</CardTitle>
+              <CardTitle className="text-[13px]">Salida</CardTitle>
             </CardHeader>
             <CardContent>
-              <ActionBar />
-              {!file && (
-                <p className="text-xs text-muted-foreground">
-                  Aquí verás el peso final y la descarga en cuanto subas una imagen.
-                </p>
-              )}
+              <OutputSettings />
             </CardContent>
           </Card>
         </section>
