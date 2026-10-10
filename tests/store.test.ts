@@ -63,7 +63,19 @@ describe("forge store: configure", () => {
     expect(s.width).toBe(800);
     expect(s.maxBytes).toBe(50_000);
     expect(s.format).toBe("image/jpeg");
-    expect(s.params["preset"]).toBe("ink-paper");
+    expect(s.paramsByStyle["duotone"]?.["preset"]).toBe("ink-paper");
+  });
+
+  test("configure no resetea ajustes existentes si no se proveen", () => {
+    const s = useForgeStore.getState();
+    s.setStyle("duotone");
+    s.updateParam("preset", "ocean");
+    // re-configura sin defaultStyle: conserva estilo y sus params
+    s.configure({ targetWidth: 900 });
+    const next = useForgeStore.getState();
+    expect(next.styleId).toBe("duotone");
+    expect(next.paramsByStyle["duotone"]?.["preset"]).toBe("ocean");
+    expect(next.width).toBe(900);
   });
 
   test("defaultStyle fuera de la lista cae al primero disponible", () => {
@@ -100,13 +112,18 @@ describe("forge store: acciones", () => {
     expect(next.fileKey).toBe(before + 1);
   });
 
-  test("setStyle cambia estilo y resetea params", () => {
+  test("setStyle conserva los params de cada estilo", () => {
     const s = useForgeStore.getState();
+    s.setStyle("pixel-art");
     s.updateParam("blockSize", 32);
     s.setStyle("grayscale");
     const next = useForgeStore.getState();
     expect(next.styleId).toBe("grayscale");
-    expect(next.params).toEqual({ contrast: 110 });
+    expect(next.paramsByStyle["grayscale"]).toEqual({ contrast: 110 });
+    // al volver, pixel-art recuerda su blockSize
+    next.setStyle("pixel-art");
+    const back = useForgeStore.getState();
+    expect(back.paramsByStyle["pixel-art"]?.["blockSize"]).toBe(32);
   });
 
   test("setStyle ignora ids no disponibles", () => {
@@ -119,7 +136,7 @@ describe("forge store: acciones", () => {
     const s = useForgeStore.getState();
     s.setStyle("pixel-art");
     s.updateParam("blockSize", 16);
-    expect(useForgeStore.getState().params).toEqual({
+    expect(useForgeStore.getState().paramsByStyle["pixel-art"]).toEqual({
       blockSize: 16,
       colors: 32,
       saturate: 20,

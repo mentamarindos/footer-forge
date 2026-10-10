@@ -49,7 +49,8 @@ interface ForgeState {
   /** Nonce que cambia en cada pick/clear: fuerza remontaje de <img>. */
   fileKey: number;
   styleId: string;
-  params: StyleParams;
+  /** Ajustes por estilo: al alternar, cada uno recuerda los suyos. */
+  paramsByStyle: Record<string, StyleParams>;
   width: number;
   format: OutputFormat;
   maxBytes: number;
@@ -94,12 +95,15 @@ export const DEFAULT_MAX_BYTES = 102_400;
 
 let runSeq = 0;
 
-/** Tema inicial: migra la clave legacy o usa el sistema. */
+/** Tema inicial: migra la clave legacy (y la limpia) o usa el sistema. */
 function initialDark(): boolean {
   if (typeof window === "undefined") return false;
   try {
     const legacy = window.localStorage.getItem("footer-forge-theme");
-    if (legacy === "dark" || legacy === "light") return legacy === "dark";
+    if (legacy === "dark" || legacy === "light") {
+      window.localStorage.removeItem("footer-forge-theme");
+      return legacy === "dark";
+    }
     return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
   } catch {
     return false;
@@ -142,6 +146,19 @@ function resolveStyles(available?: string[]): string[] {
   return list.length > 0 ? list : [...ids];
 }
 
+/** Params activos con defaults garantizados (estable si la entrada existe). */
+export function activeParams(s: { paramsByStyle: Record<string, StyleParams>; styleId: string }): StyleParams {
+  return s.paramsByStyle[s.styleId] ?? getDefaultParams(s.styleId);
+}
+
+function withStyleEntry(
+  paramsByStyle: Record<string, StyleParams>,
+  styleId: string
+): Record<string, StyleParams> {
+  if (paramsByStyle[styleId]) return paramsByStyle;
+  return { ...paramsByStyle, [styleId]: getDefaultParams(styleId) };
+}
+
 export const useForgeStore = create<ForgeState>()(
   persist(
     (set, get) => ({
@@ -149,7 +166,7 @@ export const useForgeStore = create<ForgeState>()(
   originalUrl: null,
   fileKey: 0,
   styleId: "pixel-art",
-  params: getDefaultParams("pixel-art"),
+  paramsByStyle: { "pixel-art": getDefaultParams("pixel-art") },
   width: DEFAULT_WIDTH,
   format: "image/webp",
   maxBytes: DEFAULT_MAX_BYTES,
@@ -166,18 +183,24 @@ export const useForgeStore = create<ForgeState>()(
   dark: initialDark(),
 
   configure: (cfg) => {
-    const available = resolveStyles(cfg.availableStyles);
-    const styleId = cfg.defaultStyle && available.includes(cfg.defaultStyle)
-      ? cfg.defaultStyle
-      : available[0];
+    // merge defensivo: solo aplica lo provisto; conserva estilo/params/ajustes.
+    // Sin availableStyles se asume la lista completa (default del componente).
+    const s = get();
+    const available = cfg.availableStyles ? resolveStyles(cfg.availableStyles) : STYLE_LIST.map((x) => x.id);
+    const styleId =
+      cfg.defaultStyle && available.includes(cfg.defaultStyle)
+        ? cfg.defaultStyle
+        : available.includes(s.styleId)
+          ? s.styleId
+          : available[0];
     set({
       styleId,
-      params: getDefaultParams(styleId),
-      width: cfg.targetWidth ?? DEFAULT_WIDTH,
-      maxBytes: cfg.maxBytes ?? DEFAULT_MAX_BYTES,
-      format: cfg.output ?? "image/webp",
+      paramsByStyle: withStyleEntry(s.paramsByStyle, styleId),
+      width: cfg.targetWidth ?? s.width,
+      maxBytes: cfg.maxBytes ?? s.maxBytes,
+      format: cfg.output ?? s.format,
       availableStyles: available,
-      onProcessed: cfg.onProcessed ?? null,
+      onProcessed: cfg.onProcessed !== undefined ? cfg.onProcessed : s.onProcessed,
     });
   },
 
@@ -205,11 +228,19 @@ export const useForgeStore = create<ForgeState>()(
   },
 
   setStyle: (id) => {
-    if (!get().availableStyles.includes(id)) return;
-    set({ styleId: id, params: getDefaultParams(id) });
+    const s = get();
+    if (!s.availableStyles.includes(id)) return;
+    // no resetea: cada estilo conserva sus params en paramsByStyle
+    set({ styleId: id, paramsByStyle: withStyleEntry(s.paramsByStyle, id) });
   },
 
-  updateParam: (key, value) => set((s) => ({ params: { ...s.params, [key]: value } })),
+  updateParam: (key, value) =>
+    set((s) => ({
+      paramsByStyle: {
+        ...s.paramsByStyle,
+        [s.styleId]: { ...activeParams(s), [key]: value },
+      },
+    })),
   setWidth: (width) => set({ width }),
   setFormat: (format) => set({ format }),
   setMaxBytes: (maxBytes) => set({ maxBytes }),
@@ -222,7 +253,8 @@ export const useForgeStore = create<ForgeState>()(
   toggleDark: () => set((s) => ({ dark: !s.dark })),
 
   run: async () => {
-    const { file, styleId, params, width, maxBytes, format, onProcessed, result: prev } = get();
+    const { file, styleId, width, maxBytes, format, onProcessed, result: prev } = get();
+    const params = activeParams(get());
     if (!file) return;
     const id = ++runSeq;
     set({ processing: true, stage: "decode" });
@@ -270,12 +302,22 @@ export const useForgeStore = create<ForgeState>()(
     }),
     {
       name: "footer-forge-settings",
-      version: 1,
+      version: 2,
       storage: safeStorage,
+      migrate: (persisted: unknown) => {
+        // v1 -> v2: params plano pasa a paramsByStyle
+        const p = (persisted ?? {}) as Record<string, unknown>;
+        if (p["params"] && !p["paramsByStyle"]) {
+          const styleId = typeof p["styleId"] === "string" ? p["styleId"] : "pixel-art";
+          p["paramsByStyle"] = { [styleId]: p["params"] };
+          delete p["params"];
+        }
+        return p;
+      },
       // Solo settings serializables: nunca File, blob URLs, callbacks ni flags efímeros
       partialize: (s) => ({
         styleId: s.styleId,
-        params: s.params,
+        paramsByStyle: s.paramsByStyle,
         width: s.width,
         format: s.format,
         maxBytes: s.maxBytes,
@@ -293,7 +335,7 @@ export const useForgeStore = create<ForgeState>()(
 export function useAutoProcess(delay = 350) {
   const file = useForgeStore((s) => s.file);
   const styleId = useForgeStore((s) => s.styleId);
-  const params = useForgeStore((s) => s.params);
+  const params = useForgeStore((s) => activeParams(s));
   const width = useForgeStore((s) => s.width);
   const format = useForgeStore((s) => s.format);
   const maxBytes = useForgeStore((s) => s.maxBytes);

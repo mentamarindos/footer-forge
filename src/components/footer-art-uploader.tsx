@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { Toaster } from "sonner";
 import { ActionBar } from "@/components/action-bar";
 import { CompareView } from "@/components/compare-view";
 import { Dropzone } from "@/components/dropzone";
@@ -44,14 +45,33 @@ export function FooterArtUploader({
   const configure = useForgeStore((s) => s.configure);
   const result = useForgeStore((s) => s.result);
 
+  // Config estable: se aplica una vez al montar (los arrays/callbacks inline
+  // del host cambiarían de identidad en cada render y resetearían ajustes).
+  // Nota: una sola instancia por página (store singleton compartido).
+  const onProcessedRef = useRef(onProcessed);
+  onProcessedRef.current = onProcessed;
+  const initialCfg = useRef({ defaultStyle, availableStyles, targetWidth, maxBytes, output }).current;
+  const mounted = useRef(false);
+
   useEffect(() => {
-    configure({ defaultStyle, availableStyles, targetWidth, maxBytes, output, onProcessed });
-  }, [configure, defaultStyle, availableStyles, targetWidth, maxBytes, output, onProcessed]);
+    mounted.current = true;
+    configure({
+      ...initialCfg,
+      onProcessed: (r) => {
+        if (mounted.current) onProcessedRef.current?.(r);
+      },
+    });
+    return () => {
+      mounted.current = false;
+      useForgeStore.setState({ onProcessed: null });
+    };
+  }, [configure, initialCfg]);
 
   useAutoProcess();
 
   return (
     <div className={cn("grid gap-4", className)}>
+      <Toaster richColors position="top-center" />
       <Card className="w-full">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Footer art uploader</CardTitle>

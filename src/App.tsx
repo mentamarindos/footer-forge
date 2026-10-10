@@ -12,6 +12,7 @@ import { StylePicker } from "@/components/style-picker";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAutoProcess, useForgeStore } from "@/store/use-forge-store";
+import { formatBytes } from "@/lib/utils";
 
 function SectionTitle({ children }: { children: string }) {
   return (
@@ -25,6 +26,7 @@ export default function App() {
   const dark = useForgeStore((s) => s.dark);
   const toggleDark = useForgeStore((s) => s.toggleDark);
   const result = useForgeStore((s) => s.result);
+  const maxBytes = useForgeStore((s) => s.maxBytes);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -45,7 +47,7 @@ export default function App() {
             </span>
             <span className="text-sm font-bold tracking-tight">Footer Forge</span>
             <span className="hidden rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
-              ≤ 100 KB
+              ≤ {formatBytes(maxBytes)}
             </span>
           </div>
           <ThemeToggle dark={dark} onToggle={toggleDark} />

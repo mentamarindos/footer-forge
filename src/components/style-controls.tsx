@@ -1,13 +1,13 @@
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { getStyle } from "@/lib/image/styles";
-import { useForgeStore } from "@/store/use-forge-store";
+import { activeParams, useForgeStore } from "@/store/use-forge-store";
 import { cn } from "@/lib/utils";
 
 /** Controles generados del schema del estilo activo (adaptativo, desde el store). */
 export function StyleControls() {
   const styleId = useForgeStore((s) => s.styleId);
-  const values = useForgeStore((s) => s.params);
+  const values = useForgeStore(activeParams);
   const updateParam = useForgeStore((s) => s.updateParam);
   const file = useForgeStore((s) => s.file);
 
