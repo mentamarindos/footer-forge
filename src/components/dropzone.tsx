@@ -48,7 +48,7 @@ export function Dropzone() {
         pickFile(e.dataTransfer.files?.[0]);
       }}
       className={cn(
-        "group flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-3 text-left transition-all duration-150",
+        "group flex h-full cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-3 text-left transition-all duration-150",
         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         "active:scale-[0.99]",
         dragOver
@@ -57,11 +57,11 @@ export function Dropzone() {
       )}
     >
       {file && originalUrl ? (
-        <div className="grid w-full gap-2">
+        <div className="flex h-full w-full flex-col gap-2">
           <img
             src={originalUrl}
             alt="Original"
-            className="h-24 w-full rounded-lg border object-cover"
+            className="min-h-24 w-full flex-1 rounded-lg border object-cover"
           />
           <div className="flex items-center gap-1.5">
             <div className="grid min-w-0 flex-1 gap-0.5">
@@ -95,7 +95,7 @@ export function Dropzone() {
           </div>
         </div>
       ) : (
-        <>
+        <div className="m-auto flex items-center gap-3">
           <span
             className={cn(
               "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted transition-transform duration-150",
@@ -110,7 +110,7 @@ export function Dropzone() {
               JPG · PNG · WebP · AVIF · GIF · SVG · BMP · TIFF · HEIC
             </p>
           </div>
-        </>
+        </div>
       )}
       <input
         ref={inputRef}

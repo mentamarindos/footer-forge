@@ -118,11 +118,11 @@ export default function App() {
       <main className="mx-auto grid w-full max-w-[1400px] gap-4 px-4 py-5">
         {/* fila única: las 5 tarjetas en 5 columnas */}
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Card>
+          <Card className="flex flex-col">
             <CardHeader className="pb-2">
               <CardTitle className="text-[13px]">Imagen</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-1 flex-col">
               <Dropzone />
             </CardContent>
           </Card>
