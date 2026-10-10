@@ -37,9 +37,9 @@ export interface StyleDefinition {
   params: StyleParamDef[];
   /**
    * Pure pixel transform. Must return a NEW ImageData.
-   * Implementations must be sync and fast (<100ms for 640px wide).
+   * May be async (heavy work like adaptive palettes should lazy-load).
    */
-  apply: (input: ImageData, params: StyleParams) => ImageData;
+  apply: (input: ImageData, params: StyleParams) => ImageData | Promise<ImageData>;
 }
 
 export function defaultParamsFor(def: StyleDefinition): StyleParams {

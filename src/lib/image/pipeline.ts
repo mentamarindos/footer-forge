@@ -62,7 +62,7 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
     if (!(p.key in params)) params[p.key] = p.defaultValue;
   }
   const srcData = bctx.getImageData(0, 0, w, h);
-  const styled = style.apply(srcData, params);
+  const styled = await style.apply(srcData, params);
 
   const styledCanvas = document.createElement("canvas");
   styledCanvas.width = w;

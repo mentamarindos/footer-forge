@@ -96,7 +96,13 @@ describe("forge store: acciones", () => {
     const s = useForgeStore.getState();
     s.setStyle("pixel-art");
     s.updateParam("blockSize", 16);
-    expect(useForgeStore.getState().params).toEqual({ blockSize: 16, colors: 24 });
+    expect(useForgeStore.getState().params).toEqual({
+      blockSize: 16,
+      colors: 32,
+      saturate: 20,
+      dither: "none",
+      outline: 25,
+    });
   });
 
   test("setWidth / setFormat / setDragOver", () => {
