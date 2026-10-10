@@ -1,8 +1,8 @@
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { getStyle } from "@/lib/image/styles";
 import { useForgeStore } from "@/store/use-forge-store";
+import { cn } from "@/lib/utils";
 
 /** Controles generados del schema del estilo activo (adaptativo, desde el store). */
 export function StyleControls() {
@@ -42,18 +42,29 @@ export function StyleControls() {
           return (
             <div key={p.key} className="grid gap-1.5">
               <Label className="text-xs">{p.label}</Label>
-              <Select value={String(current)} onValueChange={(v) => updateParam(p.key, v)}>
-                <SelectTrigger className="h-8 text-[13px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {p.options.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={p.label}>
+                {p.options.map((o) => {
+                  const isActive = String(current) === o.value;
+                  return (
+                    <button
+                      key={o.value}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => updateParam(p.key, o.value)}
+                      className={cn(
+                        "rounded-full border px-2.5 py-1 text-xs font-medium transition-all duration-150",
+                        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                        "active:scale-95",
+                        isActive
+                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                          : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      )}
+                    >
                       {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           );
         }
