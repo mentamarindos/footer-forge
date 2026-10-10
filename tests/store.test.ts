@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import { DEFAULT_MAX_BYTES, DEFAULT_WIDTH, WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
+import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
 
 function fakeFile(name = "foto.png", size = 2048): File {
   return new File([new Uint8Array(size)], name, { type: "image/png" });
@@ -21,6 +21,7 @@ describe("forge store: estado inicial", () => {
     expect(s.file).toBeNull();
     expect(s.result).toBeNull();
     expect(s.processing).toBe(false);
+    expect(s.previewHeight).toBe(DEFAULT_PREVIEW_HEIGHT);
     expect(s.availableStyles.length).toBe(8);
   });
 
@@ -113,15 +114,17 @@ describe("forge store: acciones", () => {
     });
   });
 
-  test("setWidth / setFormat / setDragOver", () => {
+  test("setWidth / setFormat / setDragOver / setPreviewHeight", () => {
     const s = useForgeStore.getState();
     s.setWidth(320);
     s.setFormat("image/png");
     s.setDragOver(true);
+    s.setPreviewHeight(800);
     const next = useForgeStore.getState();
     expect(next.width).toBe(320);
     expect(next.format).toBe("image/png");
     expect(next.dragOver).toBe(true);
+    expect(next.previewHeight).toBe(800);
   });
 
   test("clearFile limpia todo", () => {

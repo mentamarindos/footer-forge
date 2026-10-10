@@ -6,6 +6,7 @@ import { CompareView } from "@/components/compare-view";
 import { Dropzone } from "@/components/dropzone";
 import { FooterPreview } from "@/components/footer-preview";
 import { OutputSettings } from "@/components/output-settings";
+import { PreviewSize } from "@/components/preview-size";
 import { StyleControls } from "@/components/style-controls";
 import { StylePicker } from "@/components/style-picker";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,7 +68,12 @@ export function FooterArtUploader({
           <ActionBar />
         </CardContent>
       </Card>
-      {result && showFooterPreview && <FooterPreview result={result} />}
+      {result && showFooterPreview && (
+        <div className="grid gap-2">
+          <PreviewSize />
+          <FooterPreview result={result} />
+        </div>
+      )}
     </div>
   );
 }

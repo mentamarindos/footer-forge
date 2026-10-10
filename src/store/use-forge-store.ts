@@ -27,6 +27,7 @@ export const WIDTH_PRESETS: WidthPreset[] = [
 ];
 
 export const DEFAULT_WIDTH = 1280;
+export const DEFAULT_PREVIEW_HEIGHT = 560;
 
 export interface ForgeConfig {
   defaultStyle?: string;
@@ -52,6 +53,8 @@ interface ForgeState {
   processing: boolean;
   dragOver: boolean;
   onProcessed: ((result: ProcessResult) => void) | null;
+  /** Alto mínimo del preview del footer (px). */
+  previewHeight: number;
 
   configure: (cfg: ForgeConfig) => void;
   pickFile: (f: File | undefined | null) => void;
@@ -61,6 +64,7 @@ interface ForgeState {
   setWidth: (w: number) => void;
   setFormat: (f: OutputFormat) => void;
   setDragOver: (v: boolean) => void;
+  setPreviewHeight: (h: number) => void;
   run: () => Promise<void>;
   download: () => void;
 }
@@ -89,6 +93,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   processing: false,
   dragOver: false,
   onProcessed: null,
+  previewHeight: DEFAULT_PREVIEW_HEIGHT,
 
   configure: (cfg) => {
     const available = resolveStyles(cfg.availableStyles);
@@ -138,6 +143,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   setWidth: (width) => set({ width }),
   setFormat: (format) => set({ format }),
   setDragOver: (dragOver) => set({ dragOver }),
+  setPreviewHeight: (previewHeight) => set({ previewHeight }),
 
   run: async () => {
     const { file, styleId, params, width, maxBytes, format, onProcessed } = get();
