@@ -57,41 +57,43 @@ export function Dropzone() {
       )}
     >
       {file && originalUrl ? (
-        <>
+        <div className="grid w-full gap-2">
           <img
             src={originalUrl}
             alt="Original"
-            className="h-12 w-12 shrink-0 rounded-lg border object-cover"
+            className="h-24 w-full rounded-lg border object-cover"
           />
-          <div className="grid min-w-0 flex-1 gap-0.5">
-            <p className="truncate text-sm font-medium" title={file.name}>{file.name}</p>
-            <p className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+          <div className="flex items-center gap-1.5">
+            <div className="grid min-w-0 flex-1 gap-0.5">
+              <p className="truncate text-sm font-medium" title={file.name}>{file.name}</p>
+              <p className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+            </div>
+            <button
+              type="button"
+              aria-label="Cambiar imagen"
+              title="Cambiar imagen"
+              onClick={(e) => {
+                e.stopPropagation();
+                openPicker();
+              }}
+              className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              aria-label="Quitar imagen"
+              title="Quitar imagen"
+              onClick={(e) => {
+                e.stopPropagation();
+                clearFile();
+              }}
+              className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <button
-            type="button"
-            aria-label="Cambiar imagen"
-            title="Cambiar imagen"
-            onClick={(e) => {
-              e.stopPropagation();
-              openPicker();
-            }}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            aria-label="Quitar imagen"
-            title="Quitar imagen"
-            onClick={(e) => {
-              e.stopPropagation();
-              clearFile();
-            }}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </>
+        </div>
       ) : (
         <>
           <span
