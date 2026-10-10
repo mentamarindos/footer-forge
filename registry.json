@@ -14,7 +14,8 @@
         "lucide-react",
         "heic-to",
         "utif",
-        "zustand"
+        "zustand",
+        "image-q"
       ],
       "registryDependencies": [
         "button",
@@ -58,6 +59,11 @@
           "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/frosted.ts",
           "type": "registry:lib",
           "target": "lib/image/styles/frosted.ts"
+        },
+        {
+          "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/ballpoint.ts",
+          "type": "registry:lib",
+          "target": "lib/image/styles/ballpoint.ts"
         },
         {
           "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/image/styles/classic.ts",
