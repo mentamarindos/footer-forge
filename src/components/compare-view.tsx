@@ -5,6 +5,12 @@ import { getStyle } from "@/lib/image/styles";
 import { useForgeStore } from "@/store/use-forge-store";
 import { formatBytes } from "@/lib/utils";
 
+const STAGE_LABEL: Record<string, string> = {
+  decode: "Decodificando…",
+  style: "Estilizando…",
+  compress: "Comprimiendo…",
+};
+
 /** Comparativa original/resultado con badges de estado. */
 export function CompareView() {
   const file = useForgeStore((s) => s.file);
@@ -12,6 +18,7 @@ export function CompareView() {
   const fileKey = useForgeStore((s) => s.fileKey);
   const result = useForgeStore((s) => s.result);
   const processing = useForgeStore((s) => s.processing);
+  const stage = useForgeStore((s) => s.stage);
   const styleId = useForgeStore((s) => s.styleId);
   const maxBytes = useForgeStore((s) => s.maxBytes);
 
@@ -45,10 +52,17 @@ export function CompareView() {
             className="max-h-80 w-full rounded-lg border bg-muted object-contain"
           />
         )}
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline" className="font-mono text-[11px]">
             {formatBytes(file.size)}
           </Badge>
+          {result && (
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {result.originalWidth}×{result.originalHeight}{" "}
+              {result.detectedMime.replace("image/", "").toUpperCase()} → {result.width}×
+              {result.height} {result.mime.replace("image/", "").toUpperCase()}
+            </span>
+          )}
         </div>
       </figure>
 
@@ -68,7 +82,7 @@ export function CompareView() {
           {processing && (
             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-background/60 backdrop-blur-[1px]">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Procesando…</span>
+              <span className="text-xs text-muted-foreground">{STAGE_LABEL[stage] ?? "Procesando…"}</span>
             </div>
           )}
         </div>

@@ -9,6 +9,7 @@ declare module "utif" {
 }
 
 declare module "heic-to" {
+  export function heicTo(options: { blob: Blob; type: "bitmap"; options?: ImageBitmapOptions }): Promise<ImageBitmap>;
   export function heicTo(options: { blob: Blob; type: string; quality?: number }): Promise<Blob>;
   export function isHeic(blob: Blob | File): Promise<boolean>;
 }

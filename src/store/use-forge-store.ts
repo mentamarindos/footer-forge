@@ -56,6 +56,8 @@ interface ForgeState {
   availableStyles: string[];
   result: ProcessResult | null;
   processing: boolean;
+  /** Fase actual del procesado (para feedback en UI). */
+  stage: "idle" | "decode" | "style" | "compress";
   dragOver: boolean;
   onProcessed: ((result: ProcessResult) => void) | null;
   /** Alto mínimo del preview del footer (px). */
@@ -154,6 +156,7 @@ export const useForgeStore = create<ForgeState>()(
   availableStyles: STYLE_LIST.map((s) => s.id),
   result: null,
   processing: false,
+  stage: "idle",
   dragOver: false,
   onProcessed: null,
   previewHeight: DEFAULT_PREVIEW_HEIGHT,
@@ -219,28 +222,38 @@ export const useForgeStore = create<ForgeState>()(
   toggleDark: () => set((s) => ({ dark: !s.dark })),
 
   run: async () => {
-    const { file, styleId, params, width, maxBytes, format, onProcessed } = get();
+    const { file, styleId, params, width, maxBytes, format, onProcessed, result: prev } = get();
     if (!file) return;
     const id = ++runSeq;
-    set({ processing: true });
+    set({ processing: true, stage: "decode" });
     try {
-      const r = await processImage(file, { styleId, styleParams: params, targetWidth: width, maxBytes, output: format });
+      const r = await processImage(file, {
+        styleId,
+        styleParams: params,
+        targetWidth: width,
+        maxBytes,
+        output: format,
+        onStage: (stage) => {
+          if (runSeq === id && stage !== "done") set({ stage });
+        },
+      });
       if (runSeq !== id) {
         URL.revokeObjectURL(r.url);
         return;
       }
       set((s) => {
         if (s.result) URL.revokeObjectURL(s.result.url);
-        return { result: r };
+        return { result: r, stage: "idle" as const };
       });
       onProcessed?.(r);
-      if (!r.underLimit) {
+      // avisa solo en la transición a excedido (no spam al arrastrar sliders)
+      if (!r.underLimit && (prev?.underLimit ?? true)) {
         toast.warning(`Pesa ${formatBytes(r.size)}: no se pudo bajar de ${formatBytes(maxBytes)}.`);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al procesar la imagen.");
     } finally {
-      if (runSeq === id) set({ processing: false });
+      if (runSeq === id) set({ processing: false, stage: "idle" });
     }
   },
 

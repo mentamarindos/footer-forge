@@ -65,31 +65,42 @@ function applyBallpoint(input: ImageData, params: StyleParams): ImageData {
     }
   }
 
-  // 3. rayado
+  // 3. rayado (wobble precalculado por celda: 2 tablas en vez de 2 sin() por píxel)
   const out = new ImageData(w, h);
   const d = out.data;
   const c = Math.SQRT1_2; // cos/sin 45°
   const cell = 7; // grano del wobble
+  const cellsX = Math.ceil(w / cell);
+  const cellsY = Math.ceil(h / cell);
+  const wob1 = new Float32Array(cellsX * cellsY);
+  const wob2 = new Float32Array(cellsX * cellsY);
+  for (let cy = 0; cy < cellsY; cy++) {
+    for (let cx = 0; cx < cellsX; cx++) {
+      const ci = cy * cellsX + cx;
+      wob1[ci] = (hash2(cx, cy) - 0.5) * 0.85;
+      wob2[ci] = (hash2(cx + 57, cy + 31) - 0.5) * 0.85;
+    }
+  }
 
   for (let y = 0; y < h; y++) {
+    const cy = Math.min(cellsY - 1, Math.floor(y / cell));
     for (let x = 0; x < w; x++) {
       const i = y * w + x;
       const o = i * 4;
 
       const v = flat ? lum[i] / 255 : clamp01((lum[i] - lo) / span);
-      let dark = clamp01((1 - v) * contrast + edge[i] * 0.38);
+      const dark = clamp01((1 - v) * contrast + edge[i] * 0.38);
 
       // capa 1: 45°
-      const wob1 = (hash2(Math.floor(x / cell), Math.floor(y / cell)) - 0.5) * 0.85;
-      const t1 = frac((x * c + y * c) / spacing + wob1);
+      const ci = cy * cellsX + Math.min(cellsX - 1, Math.floor(x / cell));
+      const t1 = frac((x * c + y * c) / spacing + wob1[ci]);
       let inked = t1 < dark;
 
       // capa 2: -45°, solo sombras
       if (!inked && cross > 0) {
         const dark2 = clamp01((dark - 0.42) / 0.58) * cross;
         if (dark2 > 0) {
-          const wob2 = (hash2(Math.floor(x / cell) + 57, Math.floor(y / cell) + 31) - 0.5) * 0.85;
-          const t2 = frac((x * c - y * c) / spacing + wob2);
+          const t2 = frac((x * c - y * c) / spacing + wob2[ci]);
           inked = t2 < dark2;
         }
       }

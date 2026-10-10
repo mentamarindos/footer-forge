@@ -74,22 +74,40 @@ async function applyPixelArt(input: ImageData, params: StyleParams): Promise<Ima
     }
   }
 
-  // 3+4. paleta adaptativa + mapeo (image-q en lazy: ~100KB solo si se usa)
+  // 3+4. paleta adaptativa + mapeo (image-q en lazy: ~45KB solo si se usa).
+  // La paleta se construye sobre los promedios por bloque (miles de puntos,
+  // no millones): misma distribución, sin crear 1 objeto Point por píxel.
   const iq = await import("image-q");
+  const paletteBuf = new Uint8ClampedArray(blocksX * blocksY * 4);
+  for (let bi = 0; bi < blocksX * blocksY; bi++) {
+    paletteBuf[bi * 4] = avgs[bi * 3];
+    paletteBuf[bi * 4 + 1] = avgs[bi * 3 + 1];
+    paletteBuf[bi * 4 + 2] = avgs[bi * 3 + 2];
+    paletteBuf[bi * 4 + 3] = 255;
+  }
+  const palette = iq.buildPaletteSync(
+    [iq.utils.PointContainer.fromUint8Array(paletteBuf, blocksX, blocksY)],
+    {
+      paletteQuantization: "wuquant",
+      colorDistanceFormula: "euclidean-bt709",
+      colors,
+    }
+  );
+  // alpha opaco para cuantizar: la transparencia no debe comerse la paleta
+  const savedAlpha = new Uint8ClampedArray(w * h);
+  for (let i = 3, j = 0; i < mosaic.length; i += 4, j++) {
+    savedAlpha[j] = mosaic[i];
+    mosaic[i] = 255;
+  }
   const container = iq.utils.PointContainer.fromUint8Array(mosaic, w, h);
-  const palette = iq.buildPaletteSync([container], {
-    paletteQuantization: "wuquant",
-    colorDistanceFormula: "euclidean-bt709",
-    colors,
-  });
   const mapped = iq.applyPaletteSync(container, palette, {
     colorDistanceFormula: "euclidean-bt709",
     imageQuantization: DITHER_MAP[ditherKey] ?? "nearest",
   });
   const out = mapped.toUint8Array();
 
-  // restaura alpha original del mosaico (la cuantización lo puede mover)
-  for (let i = 3; i < out.length; i += 4) out[i] = mosaic[i];
+  // restaura alpha original del mosaico
+  for (let i = 3, j = 0; i < out.length; i += 4, j++) out[i] = savedAlpha[j];
 
   // 5. outline entre bloques vecinos de distinto color (1px interior)
   if (outline > 0 && ditherKey === "none") {

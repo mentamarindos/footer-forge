@@ -51,11 +51,14 @@ function applyFrosted(input: ImageData, params: StyleParams): ImageData {
       b += (lum - b) * frost * 0.7 + (255 - b) * frost * 0.3;
 
       for (let y = ty; y < yMax; y++) {
+        // valores por fila: dy y junta horizontal salen del bucle interno
+        const dy = (y - cy) / cy;
+        const dyy = dy * dy;
+        const groutY = y % tile === 0;
         for (let x = tx; x < xMax; x++) {
           // distancia radial normalizada 0 (centro) → 1 (esquina)
           const dx = (x - cx) / cx;
-          const dy = (y - cy) / cy;
-          const t = clamp01(Math.sqrt(dx * dx + dy * dy) / Math.SQRT2);
+          const t = clamp01(Math.sqrt(dx * dx + dyy) / Math.SQRT2);
 
           // glow: funde bordes hacia el tinte pálido
           const m = smooth(0.15, 1, t) * glow;
@@ -70,7 +73,7 @@ function applyFrosted(input: ImageData, params: StyleParams): ImageData {
           pb += (wb - pb) * c * 0.55;
 
           // junta de vidrio (borde superior/izquierdo de cada tesela)
-          if (x % tile === 0 || y % tile === 0) {
+          if (groutY || x % tile === 0) {
             pr += (255 - pr) * 0.45;
             pg += (255 - pg) * 0.45;
             pb += (255 - pb) * 0.45;

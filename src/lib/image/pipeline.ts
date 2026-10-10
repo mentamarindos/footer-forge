@@ -1,7 +1,9 @@
 import { compressToLimit } from "./compress-to-limit";
-import { decodeImage } from "./decode-image";
+import { decodeCachedImage } from "./decode-image";
 import { getStyle, type StyleDefinition } from "./styles";
 import type { StyleParams } from "./styles/types";
+
+export type ProcessStage = "decode" | "style" | "compress" | "done";
 
 export interface ProcessOptions {
   styleId?: string;
@@ -9,6 +11,7 @@ export interface ProcessOptions {
   targetWidth?: number;
   maxBytes?: number;
   output?: "image/webp" | "image/jpeg" | "image/png";
+  onStage?: (stage: ProcessStage) => void;
 }
 
 export interface ProcessResult {
@@ -36,7 +39,7 @@ function fitSize(w: number, h: number, targetWidth: number): { w: number; h: num
   return { w: targetWidth, h: Math.max(1, Math.round(h * s)) };
 }
 
-/** Pipeline completo: decode -> resize -> style -> compress */
+/** Pipeline completo: decode (cacheado) -> resize -> style -> compress */
 export async function processImage(file: File, opts: ProcessOptions = {}): Promise<ProcessResult> {
   const {
     styleId = "pixel-art",
@@ -44,10 +47,14 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
     targetWidth = 640,
     maxBytes = 102_400,
     output = "image/webp",
+    onStage,
   } = opts;
 
   const style = getStyle(styleId);
-  const decoded = await decodeImage(file);
+  onStage?.("decode");
+  // decode capado al target: nunca se materializa más de lo necesario,
+  // y el resultado se reutiliza entre runs del mismo archivo
+  const decoded = await decodeCachedImage(file, targetWidth);
   const { w, h } = fitSize(decoded.width, decoded.height, targetWidth);
 
   // resize base
@@ -65,6 +72,7 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
     if (!(p.key in params)) params[p.key] = p.defaultValue;
   }
   const srcData = bctx.getImageData(0, 0, w, h);
+  onStage?.("style");
   const styled = await style.apply(srcData, params);
 
   const styledCanvas = document.createElement("canvas");
@@ -73,7 +81,9 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
   styledCanvas.getContext("2d")!.putImageData(styled, 0, 0);
 
   // compress
+  onStage?.("compress");
   const c = await compressToLimit(styledCanvas, maxBytes, output);
+  onStage?.("done");
   const url = URL.createObjectURL(c.blob);
 
   return {
