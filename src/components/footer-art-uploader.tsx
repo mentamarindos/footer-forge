@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Toaster } from "sonner";
 import { ActionBar } from "@/components/action-bar";
-import { CompareView } from "@/components/compare-view";
 import { Dropzone } from "@/components/dropzone";
 import { FooterPreview } from "@/components/footer-preview";
 import { OutputSettings } from "@/components/output-settings";
@@ -92,7 +91,6 @@ export function FooterArtUploader({
         <CardContent className="grid gap-4">
           <Dropzone />
           <StylePicker />
-          <CompareView />
           <StyleControls />
           <OutputSettings />
           <ActionBar />

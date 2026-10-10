@@ -67,7 +67,6 @@ describe("registry shadcn", () => {
       "store/use-forge-store.ts",
       "components/footer-art-uploader.tsx",
       "components/dropzone.tsx",
-      "components/compare-view.tsx",
       "components/footer-preview.tsx",
       "lib/image/pipeline.ts",
       "lib/image/decode-image.ts",

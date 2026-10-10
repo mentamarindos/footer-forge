@@ -111,11 +111,6 @@
       "target": "components/style-picker.tsx"
     },
     {
-      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/compare-view.tsx",
-      "type": "registry:component",
-      "target": "components/compare-view.tsx"
-    },
-    {
       "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/output-settings.tsx",
       "type": "registry:component",
       "target": "components/output-settings.tsx"

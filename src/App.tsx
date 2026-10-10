@@ -1,8 +1,7 @@
-import { useEffect, useRef } from "react";
-import { Compass } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Compass, Copy } from "lucide-react";
 import { Toaster } from "sonner";
 import { ActionBar } from "@/components/action-bar";
-import { CompareView } from "@/components/compare-view";
 import { Dropzone } from "@/components/dropzone";
 import { FooterPreview } from "@/components/footer-preview";
 import { OutputSettings } from "@/components/output-settings";
@@ -14,11 +13,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAutoProcess, useForgeStore } from "@/store/use-forge-store";
 import { formatBytes } from "@/lib/utils";
 
-function SectionTitle({ children }: { children: string }) {
+const INSTALL_CMD =
+  "npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art-uploader.json";
+
+function InstallStrip() {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(INSTALL_CMD);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = INSTALL_CMD;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
   return (
-    <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-      {children}
-    </h2>
+    <div className="border-b bg-muted/40">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center gap-2 px-4 py-1.5">
+        <span className="hidden shrink-0 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:inline">
+          shadcn
+        </span>
+        <code className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground">
+          {INSTALL_CMD}
+        </code>
+        <button
+          type="button"
+          onClick={() => void copy()}
+          aria-label="Copiar comando de instalación"
+          title="Copiar"
+          className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground active:scale-90"
+        >
+          <span key={copied ? "check" : "copy"} className="animate-pop block">
+            {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+          </span>
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -26,6 +63,7 @@ export default function App() {
   const dark = useForgeStore((s) => s.dark);
   const toggleDark = useForgeStore((s) => s.toggleDark);
   const result = useForgeStore((s) => s.result);
+  const file = useForgeStore((s) => s.file);
   const maxBytes = useForgeStore((s) => s.maxBytes);
 
   useEffect(() => {
@@ -74,10 +112,11 @@ export default function App() {
           </div>
           <ThemeToggle dark={dark} onToggle={toggleDark} />
         </div>
+        <InstallStrip />
       </header>
 
       <main className="mx-auto grid w-full max-w-[1400px] gap-4 px-4 py-5 lg:grid-cols-[330px_minmax(0,1fr)]">
-        {/* sidebar: controles */}
+        {/* sidebar: entrada + estilo + salida */}
         <aside className="grid content-start gap-4">
           <Card>
             <CardHeader className="pb-2">
@@ -99,33 +138,43 @@ export default function App() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-[13px]">Ajustes</CardTitle>
+              <CardTitle className="text-[13px]">Salida</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <StyleControls />
+            <CardContent>
               <OutputSettings />
             </CardContent>
           </Card>
         </aside>
 
-        {/* workspace: comparativa + acciones */}
+        {/* workspace: ajustes + exportar (el resultado vive en el footer) */}
         <section className="grid content-start gap-4">
           <Card>
-            <CardHeader className="flex-row items-center justify-between pb-2">
-              <CardTitle className="text-[13px]">Comparativa</CardTitle>
-              <SectionTitle>antes / después</SectionTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-[13px]">Ajustes del estilo</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <CompareView />
-              <ActionBar />
+            <CardContent>
+              <StyleControls />
+              {!file && (
+                <p className="text-xs text-muted-foreground">
+                  Sube una imagen para ver los ajustes del estilo activo.
+                </p>
+              )}
             </CardContent>
           </Card>
 
-          <section className="rounded-xl border bg-muted/50 p-3 text-[11px] text-muted-foreground">
-            <p className="break-all font-mono">
-              npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art-uploader.json
-            </p>
-          </section>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-[13px]">Exportar</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ActionBar />
+              {!file && (
+                <p className="text-xs text-muted-foreground">
+                  Aquí verás el peso final y la descarga en cuanto subas una imagen.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </section>
       </main>
 
