@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+import { WheelSlider } from "@/components/ui/wheel-slider";
 import { getStyle } from "@/lib/image/styles";
 import { activeParams, useForgeStore } from "@/store/use-forge-store";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ export function StyleControls() {
                   {String(current)}{p.unit ?? ""}
                 </span>
               </div>
-              <Slider
+              <WheelSlider
                 id={p.key}
                 min={p.min}
                 max={p.max}

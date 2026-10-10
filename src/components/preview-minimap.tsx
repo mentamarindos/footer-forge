@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+import { WheelSlider } from "@/components/ui/wheel-slider";
 import { MAX_PREVIEW_WIDTH, MAX_PREVIEW_ZOOM, MIN_PREVIEW_WIDTH, MIN_PREVIEW_ZOOM, useForgeStore } from "@/store/use-forge-store";
 import { cn } from "@/lib/utils";
 
@@ -101,7 +101,7 @@ export function PreviewMinimap() {
             </button>
           </span>
         </div>
-        <Slider
+        <WheelSlider
           min={MIN_PREVIEW_WIDTH}
           max={MAX_PREVIEW_WIDTH}
           step={20}
@@ -115,7 +115,7 @@ export function PreviewMinimap() {
           <Label className="text-[11px]">Alto</Label>
           <span className="font-mono text-[10px] text-muted-foreground">{previewHeight}px</span>
         </div>
-        <Slider
+        <WheelSlider
           min={360}
           max={1000}
           step={20}
@@ -131,7 +131,7 @@ export function PreviewMinimap() {
             {Math.round(previewZoom * 100)}%
           </span>
         </div>
-        <Slider
+        <WheelSlider
           min={MIN_PREVIEW_ZOOM}
           max={MAX_PREVIEW_ZOOM}
           step={0.05}
