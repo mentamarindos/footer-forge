@@ -55,7 +55,6 @@ export function FooterPreview({ result }: Props) {
     >
       {/* la imagen procesada es EL fondo del footer: mismo plano que el texto */}
       {result && (
-        <>
           <img
             key={result.url}
             src={result.url}
@@ -63,10 +62,7 @@ export function FooterPreview({ result }: Props) {
             aria-hidden
             className="absolute inset-0 h-full w-full object-cover"
           />
-          {/* velo: sólido arriba para legibilidad, se abre abajo como en la referencia */}
-          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-zinc-950/85 to-zinc-950/35" />
-        </>
-      )}
+        )}
 
       <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 pb-6 pt-12 sm:grid-cols-2 lg:grid-cols-12">
         {/* marca + contacto */}
