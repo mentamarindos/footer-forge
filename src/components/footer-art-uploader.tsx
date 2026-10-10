@@ -1,7 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, Download, ImagePlus, Loader2, TriangleAlert } from "lucide-react";
+import {
+  Blend,
+  CheckCircle2,
+  Contrast,
+  Download,
+  Grid2x2,
+  ImagePlus,
+  Layers,
+  LayoutGrid,
+  Loader2,
+  Moon,
+  PanelBottom,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { FormatBadge } from "@/components/format-badge";
 import { StyleControls } from "@/components/style-controls";
@@ -24,8 +38,20 @@ export interface FooterArtUploaderProps {
   maxBytes?: number;
   output?: "image/webp" | "image/jpeg" | "image/png";
   onProcessed?: (result: ProcessResult) => void;
+  /** Muestra el mock de footer en vivo con la imagen resultante. */
+  showFooterPreview?: boolean;
   className?: string;
 }
+
+const STYLE_ICONS: Record<string, LucideIcon> = {
+  "pixel-art": LayoutGrid,
+  posterize: Layers,
+  duotone: Contrast,
+  grayscale: Moon,
+  dither: Grid2x2,
+  "footer-fade": PanelBottom,
+  blur: Blend,
+};
 
 export function FooterArtUploader({
   defaultStyle = "pixel-art",
@@ -34,6 +60,7 @@ export function FooterArtUploader({
   maxBytes = 102_400,
   output = "image/webp",
   onProcessed,
+  showFooterPreview = true,
   className,
 }: FooterArtUploaderProps) {
   const styles = useMemo(
@@ -166,21 +193,33 @@ export function FooterArtUploader({
           />
         </div>
 
-        {/* selector de estilo */}
+        {/* selector de estilo: toggles */}
         <div className="grid gap-2">
           <Label>Estilo</Label>
-          <Select value={styleId} onValueChange={handleStyleChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {styles.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4" role="group" aria-label="Estilo de imagen">
+            {styles.map((s) => {
+              const Icon = STYLE_ICONS[s.id] ?? LayoutGrid;
+              const active = s.id === styleId;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => handleStyleChange(s.id)}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground shadow"
+                      : "border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{s.name}</span>
+                </button>
+              );
+            })}
+          </div>
           <p className="text-xs text-muted-foreground">{style.description}</p>
         </div>
 
@@ -269,6 +308,35 @@ export function FooterArtUploader({
             <Download className="h-4 w-4" /> Descargar ({result ? formatBytes(result.size) : "—"})
           </Button>
         </div>
+
+        {/* vista previa en footer: en vivo, usa el último resultado */}
+        {result && showFooterPreview && (
+          <div className="grid gap-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              VISTA PREVIA EN FOOTER · EN VIVO
+            </span>
+            <footer className="overflow-hidden rounded-xl border">
+              <div className="relative">
+                <img
+                  src={result.url}
+                  alt="Preview en footer"
+                  className="h-44 w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-4 text-center">
+                  <p className="text-base font-bold text-white">Tu landing aquí</p>
+                  <p className="mx-auto mt-1 max-w-md text-[11px] leading-snug text-zinc-300">
+                    Así se ve tu imagen ({formatBytes(result.size)}) como fondo del
+                    footer. Cambia de estilo o mueve los controles y se actualiza sola.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-zinc-950 px-6 py-3 text-center text-[11px] text-zinc-500">
+                © 2026 Tu marca · Aviso legal · Privacidad
+              </div>
+            </footer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
