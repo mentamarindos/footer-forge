@@ -8,6 +8,7 @@ function fakeFile(name = "foto.png", size = 2048): File {
 beforeEach(() => {
   const s = useForgeStore.getState();
   s.clearFile();
+  s.setDark(false);
   s.configure({});
 });
 
@@ -25,7 +26,17 @@ describe("forge store: estado inicial", () => {
     expect(s.previewWidth).toBeNull();
     expect(s.previewZoom).toBe(MAX_PREVIEW_ZOOM);
     expect(s.previewBlur).toBe(true);
+    expect(s.dark).toBe(false);
     expect(s.availableStyles.length).toBe(8);
+  });
+
+  test("toggleDark alterna el tema", () => {
+    const s = useForgeStore.getState();
+    expect(s.dark).toBe(false);
+    s.toggleDark();
+    expect(useForgeStore.getState().dark).toBe(true);
+    s.toggleDark();
+    expect(useForgeStore.getState().dark).toBe(false);
   });
 
   test("presets cubren de mobile a 4K en orden", () => {

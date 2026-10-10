@@ -44,6 +44,9 @@ Requires [Bun](https://bun.sh) ≥ 1.0.
 Global state with [Zustand](https://zustand.docs.pmnd.rs) (`src/store/use-forge-store.ts`):
 image, style, params, output and result live in a single store;
 `useAutoProcess()` reprocesses with debounce on any change.
+Settings (style, params, output, preview size, theme) persist in
+`localStorage` via the `persist` middleware — they survive refresh.
+Files and results are never persisted (blob URLs can't).
 
 Specialized components (`src/components/`), each subscribed
 only to its store slice:

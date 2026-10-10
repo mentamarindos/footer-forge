@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { SUPPORTED_INPUT_ACCEPT } from "@/lib/image/decode-image";
 import { processImage, type ProcessResult } from "@/lib/image/pipeline";
@@ -78,6 +79,10 @@ interface ForgeState {
   setPreviewWidth: (w: number | null) => void;
   setPreviewZoom: (z: number) => void;
   setPreviewBlur: (v: boolean) => void;
+  /** Tema de la página (también persiste). */
+  dark: boolean;
+  setDark: (v: boolean) => void;
+  toggleDark: () => void;
   run: () => Promise<void>;
   download: () => void;
 }
@@ -86,13 +91,57 @@ export const DEFAULT_MAX_BYTES = 102_400;
 
 let runSeq = 0;
 
+/** Tema inicial: migra la clave legacy o usa el sistema. */
+function initialDark(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const legacy = window.localStorage.getItem("footer-forge-theme");
+    if (legacy === "dark" || legacy === "light") return legacy === "dark";
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+  } catch {
+    return false;
+  }
+}
+
+const memoryFallback = new Map<string, string>();
+
+/** Storage a prueba de SSR/tests/privado: cae a memoria si no hay localStorage. */
+const safeStorage = createJSONStorage(() => ({
+  getItem: (name: string) => {
+    try {
+      if (typeof localStorage === "undefined") return memoryFallback.get(name) ?? null;
+      return localStorage.getItem(name);
+    } catch {
+      return memoryFallback.get(name) ?? null;
+    }
+  },
+  setItem: (name: string, value: string) => {
+    try {
+      if (typeof localStorage === "undefined") memoryFallback.set(name, value);
+      else localStorage.setItem(name, value);
+    } catch {
+      /* modo privado: ignora */
+    }
+  },
+  removeItem: (name: string) => {
+    try {
+      if (typeof localStorage === "undefined") memoryFallback.delete(name);
+      else localStorage.removeItem(name);
+    } catch {
+      /* modo privado: ignora */
+    }
+  },
+}));
+
 function resolveStyles(available?: string[]): string[] {
   const ids = new Set(STYLE_LIST.map((s) => s.id));
   const list = available?.filter((id) => ids.has(id)) ?? [...ids];
   return list.length > 0 ? list : [...ids];
 }
 
-export const useForgeStore = create<ForgeState>()((set, get) => ({
+export const useForgeStore = create<ForgeState>()(
+  persist(
+    (set, get) => ({
   file: null,
   originalUrl: null,
   fileKey: 0,
@@ -110,6 +159,7 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   previewWidth: null,
   previewZoom: MAX_PREVIEW_ZOOM,
   previewBlur: true,
+  dark: initialDark(),
 
   configure: (cfg) => {
     const available = resolveStyles(cfg.availableStyles);
@@ -163,6 +213,8 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
   setPreviewWidth: (previewWidth) => set({ previewWidth }),
   setPreviewZoom: (previewZoom) => set({ previewZoom }),
   setPreviewBlur: (previewBlur) => set({ previewBlur }),
+  setDark: (dark) => set({ dark }),
+  toggleDark: () => set((s) => ({ dark: !s.dark })),
 
   run: async () => {
     const { file, styleId, params, width, maxBytes, format, onProcessed } = get();
@@ -200,7 +252,27 @@ export const useForgeStore = create<ForgeState>()((set, get) => ({
     a.download = `${base}-${result.style.id}.${ext}`;
     a.click();
   },
-}));
+    }),
+    {
+      name: "footer-forge-settings",
+      version: 1,
+      storage: safeStorage,
+      // Solo settings serializables: nunca File, blob URLs, callbacks ni flags efímeros
+      partialize: (s) => ({
+        styleId: s.styleId,
+        params: s.params,
+        width: s.width,
+        format: s.format,
+        maxBytes: s.maxBytes,
+        previewHeight: s.previewHeight,
+        previewWidth: s.previewWidth,
+        previewZoom: s.previewZoom,
+        previewBlur: s.previewBlur,
+        dark: s.dark,
+      }),
+    }
+  )
+);
 
 /** Reprocesa con debounce ante cualquier cambio (imagen, estilo, params, salida). */
 export function useAutoProcess(delay = 350) {

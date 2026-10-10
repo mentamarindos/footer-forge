@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Compass } from "lucide-react";
 import { Toaster } from "sonner";
 import { ActionBar } from "@/components/action-bar";
@@ -13,21 +13,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAutoProcess, useForgeStore } from "@/store/use-forge-store";
 
-function useTheme() {
-  const [dark, setDark] = useState<boolean>(() => {
-    const saved = localStorage.getItem("footer-forge-theme");
-    if (saved) return saved === "dark";
-    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("footer-forge-theme", dark ? "dark" : "light");
-  }, [dark]);
-
-  return { dark, toggle: () => setDark((d) => !d) };
-}
-
 function SectionTitle({ children }: { children: string }) {
   return (
     <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -37,8 +22,13 @@ function SectionTitle({ children }: { children: string }) {
 }
 
 export default function App() {
-  const { dark, toggle } = useTheme();
+  const dark = useForgeStore((s) => s.dark);
+  const toggleDark = useForgeStore((s) => s.toggleDark);
   const result = useForgeStore((s) => s.result);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   useAutoProcess();
 
@@ -58,7 +48,7 @@ export default function App() {
               ≤ 100 KB
             </span>
           </div>
-          <ThemeToggle dark={dark} onToggle={toggle} />
+          <ThemeToggle dark={dark} onToggle={toggleDark} />
         </div>
       </header>
 
