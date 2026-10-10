@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Toaster } from "sonner";
 import { ActionBar } from "@/components/action-bar";
 import { CompareView } from "@/components/compare-view";
@@ -51,8 +51,10 @@ export function FooterArtUploader({
   // del host cambiarían de identidad en cada render y resetearían ajustes).
   // Nota: una sola instancia por página (store singleton compartido).
   const onProcessedRef = useRef(onProcessed);
-  onProcessedRef.current = onProcessed;
-  const initialCfg = useRef({ defaultStyle, availableStyles, targetWidth, maxBytes, output }).current;
+  useEffect(() => {
+    onProcessedRef.current = onProcessed;
+  });
+  const [initialCfg] = useState(() => ({ defaultStyle, availableStyles, targetWidth, maxBytes, output }));
   const mounted = useRef(false);
 
   useEffect(() => {
