@@ -17,7 +17,7 @@ import { formatBytes } from "@/lib/utils";
 const INSTALL_CMD =
   "npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art.json";
 
-function InstallStrip() {
+function InstallCopy() {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -36,26 +36,21 @@ function InstallStrip() {
   };
 
   return (
-    <div className="border-b bg-muted/40">
-      <div className="mx-auto flex w-full max-w-[1400px] items-center gap-2 px-4 py-1.5">
-        <span className="hidden shrink-0 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:inline">
-          shadcn
+    <div className="flex min-w-0 items-center gap-1 rounded-lg border bg-muted/40 py-1 pl-2.5 pr-1">
+      <code className="hidden min-w-0 max-w-40 truncate font-mono text-[11px] text-muted-foreground md:block lg:max-w-72">
+        {INSTALL_CMD}
+      </code>
+      <button
+        type="button"
+        onClick={() => void copy()}
+        aria-label="Copiar comando de instalación"
+        title={INSTALL_CMD}
+        className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground active:scale-90"
+      >
+        <span key={copied ? "check" : "copy"} className="animate-pop block">
+          {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
         </span>
-        <code className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground">
-          {INSTALL_CMD}
-        </code>
-        <button
-          type="button"
-          onClick={() => void copy()}
-          aria-label="Copiar comando de instalación"
-          title="Copiar"
-          className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground active:scale-90"
-        >
-          <span key={copied ? "check" : "copy"} className="animate-pop block">
-            {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
-          </span>
-        </button>
-      </div>
+      </button>
     </div>
   );
 }
@@ -115,9 +110,11 @@ export default function App() {
               ≤ {formatBytes(maxBytes)}
             </span>
           </div>
-          <ThemeToggle dark={dark} onToggle={toggleDark} />
+          <div className="flex shrink-0 items-center gap-1.5">
+            <InstallCopy />
+            <ThemeToggle dark={dark} onToggle={toggleDark} />
+          </div>
         </div>
-        <InstallStrip />
       </header>
 
       <main className="mx-auto grid w-full max-w-[1400px] gap-4 px-4 py-5">
