@@ -5,6 +5,15 @@ function frac(v: number): number {
   return v - Math.floor(v);
 }
 
+/** Ancho de referencia: el slider de densidad se define a 640px. */
+export const DENSITY_REF_WIDTH = 640;
+
+/** Densidad de trazo proporcional al ancho: se ve igual a 640px que a 4K. */
+export function resolveSpacing(params: StyleParams, width: number): number {
+  const raw = Math.max(2, Math.round(Number(params.spacing ?? 4)));
+  return Math.max(2, Math.round((raw * width) / DENSITY_REF_WIDTH));
+}
+
 /**
  * Ballpoint: dibujo a boli sobre papel con tramas de grabado.
  * - Niveles auto (percentiles) para que funcione con cualquier foto.
@@ -14,7 +23,7 @@ function frac(v: number): number {
  * - Wobble determinista para que el trazo respire como hecho a mano.
  */
 function applyBallpoint(input: ImageData, params: StyleParams): ImageData {
-  const spacing = Math.max(2, Math.round(Number(params.spacing ?? 4)));
+  const spacing = resolveSpacing(params, input.width);
   const contrast = Number(params.contrast ?? 120) / 100;
   const cross = Number(params.crosshatch ?? 70) / 100;
   const [ir, ig, ib] = hexToRgb(String(params.ink ?? "#1e40a0"));

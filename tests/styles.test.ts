@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { STYLE_LIST, defaultParamsFor, getDefaultParams, getStyle } from "@/lib/image/styles";
+import { resolveSpacing } from "@/lib/image/styles/ballpoint";
+import { resolveFrostTile } from "@/lib/image/styles/frosted";
+import { resolvePixelBlock } from "@/lib/image/styles/pixel-art";
 import type { StyleParams } from "@/lib/image/styles/types";
 
 function solid(w: number, h: number, r: number, g: number, b: number, a = 255): ImageData {
@@ -118,6 +121,48 @@ describe("pixel-art", () => {
     for (let i = 3; i < out.data.length; i += 4) {
       expect(out.data[i]).toBe(200);
     }
+  });
+});
+
+describe("densidad proporcional al ancho", () => {
+  test("resolvePixelBlock: 80 bloques se ven igual a 640px que a 4K", () => {
+    expect(resolvePixelBlock({ blocks: 80 }, 640)).toBe(8);
+    expect(resolvePixelBlock({ blocks: 80 }, 3840)).toBe(48);
+  });
+
+  test("resolvePixelBlock respeta el blockSize legacy", () => {
+    expect(resolvePixelBlock({ blockSize: 8 }, 32)).toBe(8);
+    expect(resolvePixelBlock({ blockSize: 8 }, 3840)).toBe(8);
+    // lo nuevo manda sobre lo legacy
+    expect(resolvePixelBlock({ blocks: 80, blockSize: 8 }, 640)).toBe(8);
+  });
+
+  test("blocks equivalentes dan bloques uniformes (4 bloques en 32px = 8px)", async () => {
+    const out = await getStyle("pixel-art").apply(horizontalGradient(32, 32), {
+      blocks: 4,
+      colors: 16,
+      saturate: 0,
+      dither: "none",
+      outline: 0,
+    });
+    const first = [out.data[0], out.data[1], out.data[2]];
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const i = (y * 32 + x) * 4;
+        expect([out.data[i], out.data[i + 1], out.data[i + 2]]).toEqual(first);
+      }
+    }
+  });
+
+  test("resolveFrostTile: 32 teselas a 640px = 20px; legacy intacto", () => {
+    expect(resolveFrostTile({ tiles: 32 }, 640)).toBe(20);
+    expect(resolveFrostTile({ tileSize: 20 }, 100)).toBe(20);
+  });
+
+  test("resolveSpacing escala con el ancho con mínimo 2", () => {
+    expect(resolveSpacing({ spacing: 4 }, 640)).toBe(4);
+    expect(resolveSpacing({ spacing: 4 }, 3840)).toBe(24);
+    expect(resolveSpacing({ spacing: 4 }, 32)).toBe(2);
   });
 });
 

@@ -1,5 +1,6 @@
-export interface ImageDecodeResult {
-  canvas: HTMLCanvasElement;
+import { drawStepped } from "./resample";
+
+export interface ImageDecodeResult {  canvas: HTMLCanvasElement;
   width: number;
   height: number;
   detectedMime: string;
@@ -46,20 +47,6 @@ function fitInside(w: number, h: number, maxSide: number): { w: number; h: numbe
   return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
 }
 
-function drawHighQuality(
-  canvas: HTMLCanvasElement,
-  source: CanvasImageSource,
-  w: number,
-  h: number
-): void {
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d")!;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(source, 0, 0, w, h);
-}
-
 function sniffMime(bytes: Uint8Array, fallbackType: string): string {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
   if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return "image/png";
@@ -91,23 +78,13 @@ function sniffMime(bytes: Uint8Array, fallbackType: string): string {
 }
 
 async function blobToCanvasViaBitmap(blob: Blob, maxSide: number, name: string): Promise<HTMLCanvasElement> {
-  let bitmap = await createImageBitmap(blob);
+  const bitmap = await createImageBitmap(blob);
   try {
     assertMegapixels(bitmap.width, bitmap.height, name);
     const target = fitInside(bitmap.width, bitmap.height, maxSide);
-    if (target.w !== bitmap.width || target.h !== bitmap.height) {
-      // segunda pasada ya escalada: nunca se materializa el full-res en canvas
-      const small = await createImageBitmap(blob, {
-        resizeWidth: target.w,
-        resizeHeight: target.h,
-        resizeQuality: "high",
-      });
-      bitmap.close();
-      bitmap = small;
-    }
-    const canvas = document.createElement("canvas");
-    drawHighQuality(canvas, bitmap, bitmap.width, bitmap.height);
-    return canvas;
+    // Re-muestreo progresivo desde el full-res: el resize nativo ("high" es
+    // bilinear en la práctica) mataba el detalle fino en saltos grandes.
+    return drawStepped(bitmap, bitmap.width, bitmap.height, target.w, target.h);
   } finally {
     bitmap.close();
   }
@@ -135,9 +112,7 @@ async function blobToCanvasViaImage(blob: Blob, maxSide: number, name: string): 
     const h = img.naturalHeight || img.height || Math.round(w * 0.5);
     assertMegapixels(w, h, name);
     const target = fitInside(w, h, maxSide);
-    const canvas = document.createElement("canvas");
-    drawHighQuality(canvas, img, target.w, target.h);
-    return canvas;
+    return drawStepped(img, w, h, target.w, target.h);
   } finally {
     revoke();
   }
@@ -164,9 +139,7 @@ async function decodeTiff(file: File, maxSide: number): Promise<HTMLCanvasElemen
   fctx.putImageData(imageData, 0, 0);
   const target = fitInside(w, h, maxSide);
   if (target.w === w && target.h === h) return full;
-  const canvas = document.createElement("canvas");
-  drawHighQuality(canvas, full, target.w, target.h);
-  return canvas;
+  return drawStepped(full, w, h, target.w, target.h);
 }
 
 async function decodeHeic(file: File, maxSide: number): Promise<HTMLCanvasElement> {
@@ -176,9 +149,7 @@ async function decodeHeic(file: File, maxSide: number): Promise<HTMLCanvasElemen
   try {
     assertMegapixels(bitmap.width, bitmap.height, file.name);
     const target = fitInside(bitmap.width, bitmap.height, maxSide);
-    const canvas = document.createElement("canvas");
-    drawHighQuality(canvas, bitmap, target.w, target.h);
-    return canvas;
+    return drawStepped(bitmap, bitmap.width, bitmap.height, target.w, target.h);
   } finally {
     bitmap.close();
   }

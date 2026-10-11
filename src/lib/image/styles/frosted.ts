@@ -7,12 +7,24 @@ function smooth(a: number, b: number, t: number): number {
 }
 
 /**
+ * Teselas proporcionales al ancho (igual que pixel-art).
+ * Acepta el `tileSize` legacy (px absolutos) para params guardados viejos.
+ */
+export function resolveFrostTile(params: StyleParams, width: number): number {
+  const raw = Number(params.tiles ?? NaN);
+  if (Number.isFinite(raw)) {
+    return Math.max(4, Math.round(width / Math.max(1, raw)));
+  }
+  return Math.max(4, Math.round(Number(params.tileSize ?? 20)));
+}
+
+/**
  * Frosted Mosaic Glass: teselas promediadas con velo esmerilado,
  * resplandor radial (centro vivo → bordes pálidos), calidez central,
  * juntas de vidrio y grano fino. Inspirado en mosaicos de luz cálida.
  */
 function applyFrosted(input: ImageData, params: StyleParams): ImageData {
-  const tile = Math.max(4, Math.round(Number(params.tileSize ?? 20)));
+  const tile = resolveFrostTile(params, input.width);
   const frost = Number(params.frost ?? 45) / 100;
   const glow = Number(params.glow ?? 65) / 100;
   const warmth = Number(params.warmth ?? 30) / 100;
@@ -100,7 +112,7 @@ export const frostedStyle: StyleDefinition = {
   name: "Frosted Mosaic",
   description: "Vidrio esmerilado en teselas con resplandor radial cálido.",
   params: [
-    { key: "tileSize", label: "Tamaño de tesela", type: "slider", min: 6, max: 48, step: 1, defaultValue: 20, unit: "px" },
+    { key: "tiles", label: "Teselas a lo ancho", type: "slider", min: 8, max: 128, step: 2, defaultValue: 32 },
     { key: "frost", label: "Esmerilado", type: "slider", min: 0, max: 100, step: 1, defaultValue: 45, unit: "%" },
     { key: "glow", label: "Resplandor bordes", type: "slider", min: 0, max: 100, step: 1, defaultValue: 65, unit: "%" },
     { key: "warmth", label: "Calidez central", type: "slider", min: 0, max: 100, step: 1, defaultValue: 30, unit: "%" },

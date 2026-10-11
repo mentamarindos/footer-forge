@@ -1,16 +1,21 @@
-export interface CompressResult {
+export interface FitResult {
   blob: Blob;
-  finalWidth: number;
-  finalHeight: number;
   mime: string;
   quality: number;
-  attempts: number;
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, mime: string, quality: number): Promise<Blob | null> {
   return new Promise((resolve) => {
     canvas.toBlob((b) => resolve(b), mime, quality);
   });
+}
+
+export function encodeCanvas(
+  canvas: HTMLCanvasElement,
+  mime: string,
+  quality: number
+): Promise<Blob | null> {
+  return canvasToBlob(canvas, mime, quality);
 }
 
 const mimeSupportCache = new Map<string, boolean>();
@@ -26,22 +31,11 @@ async function supportsMime(mime: string): Promise<boolean> {
   return ok;
 }
 
-function drawScaled(source: HTMLCanvasElement, w: number, h: number): HTMLCanvasElement {
-  const next = document.createElement("canvas");
-  next.width = Math.max(64, w);
-  next.height = Math.max(64, h);
-  const ctx = next.getContext("2d")!;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(source, 0, 0, next.width, next.height);
-  return next;
-}
-
 /**
  * JPEG no tiene alpha: aplana sobre fondo claro para no dejar bandas negras.
  * Llamar solo cuando el mime final no soporta transparencia.
  */
-function flattenAlpha(source: HTMLCanvasElement, bg = "#ffffff"): HTMLCanvasElement {
+export function flattenAlpha(source: HTMLCanvasElement, bg = "#ffffff"): HTMLCanvasElement {
   const out = document.createElement("canvas");
   out.width = source.width;
   out.height = source.height;
@@ -52,43 +46,54 @@ function flattenAlpha(source: HTMLCanvasElement, bg = "#ffffff"): HTMLCanvasElem
   return out;
 }
 
+/** Resuelve el mime real (WebP sin soporte cae a JPEG). */
+export async function resolveMime(
+  preferred: "image/webp" | "image/jpeg" | "image/png"
+): Promise<"image/webp" | "image/jpeg" | "image/png"> {
+  if (preferred === "image/webp" && !(await supportsMime("image/webp"))) return "image/jpeg";
+  return preferred;
+}
+
 /**
- * Mejor calidad que quepa en maxBytes a esta escala (búsqueda binaria).
- * Devuelve el blob de MAYOR calidad que cumple, o null si ni q=0.3 cabe.
+ * Mejor calidad que quepa en maxBytes a ESTA escala (búsqueda binaria,
+ * tolerancia 0.02: no se regala calidad).
+ *
+ * No re-escala nunca: si ni q=0.3 cabe devuelve null y el pipeline
+ * re-estiliza a menor tamaño. Re-escalar lo ya estilizado rompería la
+ * alineación de bloques de pixel-art/dither (bordes sucios).
  */
-async function bestQualityFit(
+export async function tryFitAtScale(
   canvas: HTMLCanvasElement,
-  mime: string,
-  maxBytes: number,
-  counter: { attempts: number }
-): Promise<{ blob: Blob; quality: number } | null> {
+  preferred: "image/webp" | "image/jpeg" | "image/png",
+  maxBytes: number
+): Promise<FitResult | null> {
+  const mime = await resolveMime(preferred);
+  // el canvas de trabajo: sin alpha si el destino no lo soporta
+  const base = mime === "image/jpeg" ? flattenAlpha(canvas) : canvas;
+
+  if (mime === "image/png") {
+    // PNG no tiene quality: un solo intento, cabe o no cabe
+    const blob = await canvasToBlob(base, "image/png", 1);
+    if (!blob || blob.size > maxBytes) return null;
+    return { blob, mime: "image/png", quality: 1 };
+  }
+
+  const probe = (q: number) => canvasToBlob(base, mime, q);
+
+  const first = await probe(0.95);
+  if (!first) return null;
+  if (first.size <= maxBytes) return { blob: first, mime, quality: 0.95 };
+
+  const worst = await probe(0.3);
+  if (!worst || worst.size > maxBytes) return null;
+
   let lo = 0.3;
   let hi = 0.95;
-
-  const probe = async (q: number) => {
-    counter.attempts++;
-    return canvasToBlob(canvas, mime, q);
-  };
-
-  const first = await probe(hi);
-  if (!first) return null;
-  if (first.size <= maxBytes) return { blob: first, quality: hi };
-  // atajo: si ni a mínima calidad hay esperanza, escalar directo
-  const worst = await probe(lo);
-  if (!worst) return null;
-  if (worst.size > maxBytes * 1.6) return null;
-
   let candidate: { blob: Blob; quality: number } = { blob: worst, quality: lo };
-  // worst ya cabe si worst.size <= maxBytes (si no, candidate se descarta abajo)
-  let fits = worst.size <= maxBytes;
-  if (!fits) {
-    // ni q=0.3 cabe: no hay nada que rescatar a esta escala
-    return null;
-  }
-  while (hi - lo > 0.07) {
+  while (hi - lo > 0.02) {
     const mid = (lo + hi) / 2;
     const blob = await probe(mid);
-    if (!blob) return candidate;
+    if (!blob) break;
     if (blob.size <= maxBytes) {
       candidate = { blob, quality: mid };
       lo = mid;
@@ -96,60 +101,5 @@ async function bestQualityFit(
       hi = mid;
     }
   }
-  return candidate;
-}
-
-/**
- * Comprime un canvas hasta que pese <= maxBytes.
- * Estrategia: máxima calidad que quepa (búsqueda binaria); si ni q=0.3
- * cabe, escala ×0.85 y repite.
- */
-export async function compressToLimit(
-  source: HTMLCanvasElement,
-  maxBytes = 102_400,
-  preferred: "image/webp" | "image/jpeg" | "image/png" = "image/webp"
-): Promise<CompressResult> {
-  let mime = preferred;
-  if (mime === "image/webp" && !(await supportsMime("image/webp"))) mime = "image/jpeg";
-
-  // el canvas de trabajo: sin alpha si el destino no lo soporta
-  let base = mime === "image/jpeg" ? flattenAlpha(source) : source;
-  const counter = { attempts: 0 };
-
-  if (mime === "image/png") {
-    // PNG no tiene quality: solo escala
-    let scale = 1;
-    let current = base;
-    for (;;) {
-      counter.attempts++;
-      const blob = await canvasToBlob(current, "image/png", 1);
-      if (!blob) throw new Error("encode-failed");
-      if (blob.size <= maxBytes || scale < 0.25 || current.width <= 64) {
-        return { blob, finalWidth: current.width, finalHeight: current.height, mime: "image/png", quality: 1, attempts: counter.attempts };
-      }
-      scale *= 0.85;
-      current = drawScaled(source, Math.round(source.width * scale), Math.round(source.height * scale));
-      if (counter.attempts > 12) {
-        return { blob, finalWidth: current.width, finalHeight: current.height, mime: "image/png", quality: 1, attempts: counter.attempts };
-      }
-    }
-  }
-
-  let scale = 1;
-  let current = base;
-
-  for (let round = 0; round < 8; round++) {
-    const fit = await bestQualityFit(current, mime, maxBytes, counter);
-    if (fit) {
-      return { blob: fit.blob, finalWidth: current.width, finalHeight: current.height, mime, quality: fit.quality, attempts: counter.attempts };
-    }
-    scale *= 0.85;
-    if (scale < 0.2 || current.width <= 64) break;
-    current = drawScaled(base, Math.round(base.width * scale), Math.round(base.height * scale));
-  }
-
-  const fallback = (await canvasToBlob(current, mime, 0.3)) ?? (await canvasToBlob(current, "image/jpeg", 0.5));
-  if (!fallback) throw new Error("No se pudo comprimir bajo el límite.");
-  counter.attempts += 1;
-  return { blob: fallback, finalWidth: current.width, finalHeight: current.height, mime: fallback.type, quality: 0.3, attempts: counter.attempts };
+  return { blob: candidate.blob, mime, quality: candidate.quality };
 }

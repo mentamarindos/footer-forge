@@ -14,6 +14,21 @@ function colorDist(aR: number, aG: number, aB: number, bR: number, bG: number, b
   return Math.sqrt(dr * dr + dg * dg + db * db);
 }
 
+/** Ancho de referencia: los sliders de densidad se definen a 640px. */
+export const DENSITY_REF_WIDTH = 640;
+
+/**
+ * Bloques proporcionales al ancho: 80 bloques se ven igual a 640px que a 4K.
+ * Acepta el `blockSize` legacy (px absolutos) para params guardados viejos.
+ */
+export function resolvePixelBlock(params: StyleParams, width: number): number {
+  const raw = Number(params.blocks ?? NaN);
+  if (Number.isFinite(raw)) {
+    return Math.max(2, Math.round(width / Math.max(1, raw)));
+  }
+  return Math.max(2, Math.round(Number(params.blockSize ?? 8)));
+}
+
 /**
  * Pixel-art de verdad:
  * 1. Mosaico por promedio de bloque (muestreo correcto, sin aliasing).
@@ -24,7 +39,7 @@ function colorDist(aR: number, aG: number, aB: number, bR: number, bG: number, b
  * 5. Outline sutil entre bloques de distinto color (definición).
  */
 async function applyPixelArt(input: ImageData, params: StyleParams): Promise<ImageData> {
-  const block = Math.max(2, Math.round(Number(params.blockSize ?? 8)));
+  const block = resolvePixelBlock(params, input.width);
   const colors = Math.max(2, Math.min(64, Math.round(Number(params.colors ?? 32))));
   const saturate = Number(params.saturate ?? 20) / 100;
   const ditherKey = String(params.dither ?? "none");
@@ -153,7 +168,7 @@ export const pixelArtStyle: StyleDefinition = {
   name: "Pixel Art",
   description: "Mosaico retro + paleta adaptativa. Ideal para footers con carácter.",
   params: [
-    { key: "blockSize", label: "Tamaño de bloque", type: "slider", min: 2, max: 32, step: 1, defaultValue: 8, unit: "px" },
+    { key: "blocks", label: "Bloques a lo ancho", type: "slider", min: 16, max: 320, step: 4, defaultValue: 80 },
     { key: "colors", label: "Colores", type: "slider", min: 4, max: 64, step: 1, defaultValue: 32 },
     { key: "saturate", label: "Viveza", type: "slider", min: 0, max: 100, step: 1, defaultValue: 20, unit: "%" },
     {

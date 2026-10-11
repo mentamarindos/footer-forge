@@ -23,6 +23,9 @@ export function ActionBar() {
     (result.width < result.requestedWidth || result.height < result.requestedHeight);
   // la foto manda: si es más chica que el preset, no se amplía (no inventa píxeles)
   const sourceLimited = result != null && !upscale && result.originalWidth < targetWidth;
+  const upscaled = result != null && upscale && result.originalWidth < result.requestedWidth;
+  const lowQuality =
+    result != null && result.mime !== "image/png" && result.quality <= 0.4;
 
   return (
     <div className="grid gap-3">
@@ -33,6 +36,15 @@ export function ActionBar() {
             <Badge variant="outline" className="font-mono text-[11px]">
               {result.width}×{result.height}
             </Badge>
+            {result.mime === "image/png" ? (
+              <Badge variant="outline" className="font-mono text-[11px]" title="PNG sin pérdida">
+                lossless
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="font-mono text-[11px]" title="Calidad del codificador">
+                q {result.quality.toFixed(2)}
+              </Badge>
+            )}
             <Badge variant={result.underLimit ? "default" : "destructive"} className="font-mono text-[11px]">
               {formatBytes(result.size)}
             </Badge>
@@ -49,6 +61,18 @@ export function ActionBar() {
               Tu foto mide {result.originalWidth}px de ancho: no se amplía a{" "}
               {targetWidth}px porque interpolar no crea calidad real. Usa una
               foto más grande si necesitas 4K de verdad.
+            </p>
+          )}
+          {upscaled && (
+            <p className="animate-fade-in text-[11px] text-muted-foreground">
+              Ampliada de {result.originalWidth} → {result.requestedWidth}px
+              (suavizado, sin detalle nuevo).
+            </p>
+          )}
+          {lowQuality && (
+            <p className="animate-fade-in text-[11px] text-muted-foreground">
+              Calidad q {result.quality.toFixed(2)} para caber en{" "}
+              {formatBytes(maxBytes)}. Sube el límite o baja el ancho para más calidad.
             </p>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test";
+import { getDefaultParams } from "@/lib/image/styles";
 import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, MAX_PREVIEW_ZOOM, WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
 
 function fakeFile(name = "foto.png", size = 2048): File {
@@ -11,6 +12,11 @@ beforeEach(() => {
   s.setDark(false);
   s.setUpscale(false);
   s.configure({});
+  // hermético: el store es singleton y los params arrastrarían entre tests
+  useForgeStore.setState({
+    styleId: "pixel-art",
+    paramsByStyle: { "pixel-art": getDefaultParams("pixel-art") },
+  });
 });
 
 describe("forge store: estado inicial", () => {
@@ -137,9 +143,9 @@ describe("forge store: acciones", () => {
   test("updateParam fusiona sin borrar el resto", () => {
     const s = useForgeStore.getState();
     s.setStyle("pixel-art");
-    s.updateParam("blockSize", 16);
+    s.updateParam("blocks", 160);
     expect(useForgeStore.getState().paramsByStyle["pixel-art"]).toEqual({
-      blockSize: 16,
+      blocks: 160,
       colors: 32,
       saturate: 20,
       dither: "none",
