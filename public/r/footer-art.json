@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "footer-art",
+  "type": "registry:component",
+  "title": "Footer Art",
+  "description": "Footer visual puro para landings: recibe la imagen ya procesada y textos por props. Sin dependencias.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/components/footer-art.tsx",
+      "type": "registry:component",
+      "target": "components/footer-art.tsx"
+    },
+    {
+      "path": "https://raw.githubusercontent.com/mentamarindos/footer-forge/main/src/lib/footer-theme.ts",
+      "type": "registry:lib",
+      "target": "lib/footer-theme.ts"
+    }
+  ]
+}

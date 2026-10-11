@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,7 +21,7 @@ interface RegistryItem {
 
 function loadItem(): RegistryItem {
   return JSON.parse(
-    readFileSync(join(ROOT, "public", "r", "footer-art-uploader.json"), "utf8")
+    readFileSync(join(ROOT, "public", "r", "footer-art.json"), "utf8")
   ) as RegistryItem;
 }
 
@@ -36,50 +36,40 @@ function localPath(urlOrPath: string): string {
   return join(ROOT, rel);
 }
 
-describe("registry shadcn", () => {
+describe("registry shadcn (footer-art)", () => {
   test("public/r coincide con el item de registry.json", () => {
     const index = loadIndex();
-    expect(index.items.length).toBeGreaterThan(0);
+    expect(index.items.length).toBe(1);
+    expect(index.items[0].name).toBe("footer-art");
     expect(loadItem()).toEqual(index.items[0]);
   });
 
   test("cada archivo del registry existe en el repo", () => {
     const item = loadItem();
-    expect(item.files.length).toBeGreaterThan(10);
+    expect(item.files.length).toBe(2);
     for (const f of item.files) {
       expect(existsSync(localPath(f.path))).toBe(true);
     }
   });
 
-  test("todos los estilos están registrados", () => {
+  test("sin dependencias: el componente es autocontenido", () => {
     const item = loadItem();
-    const paths = item.files.map((f) => f.path);
-    const styleDir = join(ROOT, "src", "lib", "image", "styles");
-    for (const entry of readdirSync(styleDir)) {
-      if (!entry.endsWith(".ts")) continue;
-      expect(paths).toContain(`${RAW_PREFIX}src/lib/image/styles/${entry}`);
-    }
+    expect(item.dependencies ?? []).toEqual([]);
+    expect(item.registryDependencies ?? []).toEqual([]);
   });
 
-  test("store y componentes clave están registrados", () => {
-    const targets = loadItem().files.map((f) => f.target);
-    for (const t of [
-      "store/use-forge-store.ts",
-      "components/footer-art-uploader.tsx",
-      "components/dropzone.tsx",
-      "components/footer-preview.tsx",
-      "lib/image/pipeline.ts",
-      "lib/image/decode-image.ts",
-      "lib/image/compress-to-limit.ts",
+  test("footer-art no importa motor, store ni UI del estudio", () => {
+    const src = readFileSync(join(ROOT, "src", "components", "footer-art.tsx"), "utf8");
+    for (const banned of [
+      "@/store/",
+      "@/lib/image/",
+      "@/components/ui/",
+      "zustand",
+      "sonner",
+      "lucide-react",
+      "image-q",
     ]) {
-      expect(targets).toContain(t);
-    }
-  });
-
-  test("dependencias runtime necesarias presentes", () => {
-    const deps = loadItem().dependencies ?? [];
-    for (const dep of ["sonner", "lucide-react", "heic-to", "utif", "zustand", "image-q"]) {
-      expect(deps).toContain(dep);
+      expect(src.includes(banned)).toBe(false);
     }
   });
 });

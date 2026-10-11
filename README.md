@@ -64,26 +64,35 @@ only to its store slice:
 
 ## Install as a shadcn component
 
+The registry publishes **only the visual footer** (`footer-art`, zero dependencies).
+The studio (image engine, editor, store) stays in this repo and is not published.
+
 ```bash
-npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art-uploader.json
+npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art.json
 ```
 
-Usage:
+Usage (pass your already-hosted image + your own copy):
 
 ```tsx
-import { FooterArtUploader } from "@/components/footer-art-uploader";
+import { FooterArt } from "@/components/footer-art";
 
-<FooterArtUploader
-  defaultStyle="footer-fade"
-  availableStyles={["pixel-art", "duotone", "footer-fade"]}
-  targetWidth={640}
-  maxBytes={102_400}
-  output="image/webp"
-  onProcessed={(r) => console.log(r.size, r.mime)}
-/>
+<FooterArt
+  src="https://my-site.com/footer.webp"
+  brand={{ name: "Acme", tagline: "We build fast landings." }}
+  columns={[
+    { title: "Company", links: [{ label: "About", href: "/about" }] },
+    { title: "Legal", links: [{ label: "Privacy", href: "/privacy" }] },
+  ]}
+  copyright="© 2026 Acme Inc."
+  theme="auto" // "light" | "dark" | "auto"
+  veil={true}  // readability blur on top
+/>;
 ```
 
-## How the pipeline works
+Flow: generate the image in the studio → download the `.webp` → host it on
+your site or CDN → install `footer-art` and pass it as `src`.
+
+## How the pipeline works (studio)
 
 ```
 file → magic-bytes sniff → decode (bitmap | img | utif | heic-to | svg)

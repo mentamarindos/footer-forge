@@ -3,7 +3,7 @@ import { Check, Compass, Copy } from "lucide-react";
 import { Toaster } from "sonner";
 import { ActionBar } from "@/components/action-bar";
 import { Dropzone } from "@/components/dropzone";
-import { FooterPreview } from "@/components/footer-preview";
+import { FooterArt } from "@/components/footer-art";
 import { OutputSettings } from "@/components/output-settings";
 import { PreviewMinimap } from "@/components/preview-minimap";
 import { StyleControls } from "@/components/style-controls";
@@ -14,7 +14,7 @@ import { useAutoProcess, useForgeStore } from "@/store/use-forge-store";
 import { formatBytes } from "@/lib/utils";
 
 const INSTALL_CMD =
-  "npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art-uploader.json";
+  "npx shadcn@latest add https://raw.githubusercontent.com/mentamarindos/footer-forge/main/public/r/footer-art.json";
 
 function InstallStrip() {
   const [copied, setCopied] = useState(false);
@@ -65,6 +65,10 @@ export default function App() {
   const result = useForgeStore((s) => s.result);
   const file = useForgeStore((s) => s.file);
   const maxBytes = useForgeStore((s) => s.maxBytes);
+  const previewWidth = useForgeStore((s) => s.previewWidth);
+  const previewHeight = useForgeStore((s) => s.previewHeight);
+  const previewZoom = useForgeStore((s) => s.previewZoom);
+  const previewBlur = useForgeStore((s) => s.previewBlur);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -176,7 +180,18 @@ export default function App() {
       </main>
 
       {/* footer real a 100% del ancho, alimentado en vivo desde el store */}
-      <FooterPreview result={result} />
+      <FooterArt
+        src={result?.url}
+        height={previewHeight}
+        maxWidth={previewWidth ?? undefined}
+        imageScale={previewZoom}
+        veil={previewBlur}
+        placeholder={
+          <p className="relative mx-auto w-full max-w-6xl px-4 pb-8 pt-12 text-center font-serif text-sm italic text-zinc-500">
+            Tu imagen procesada será el fondo de este footer en cuanto subas una
+          </p>
+        }
+      />
 
       {/* minimapa flotante para dimensionar el preview */}
       <PreviewMinimap />
