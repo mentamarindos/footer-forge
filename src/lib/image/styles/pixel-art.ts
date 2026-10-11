@@ -19,14 +19,22 @@ export const DENSITY_REF_WIDTH = 640;
 
 /**
  * Bloques proporcionales al ancho: 80 bloques se ven igual a 640px que a 4K.
- * Acepta el `blockSize` legacy (px absolutos) para params guardados viejos.
+ * Acepta el `blockSize` legacy (px absolutos) para params guardados viejos
+ * (la migración del store ya los convierte; esto es defensa en profundidad).
+ * Valores corruptos (0, negativos, NaN) caen al default, nunca a 1 bloque.
  */
 export function resolvePixelBlock(params: StyleParams, width: number): number {
   const raw = Number(params.blocks ?? NaN);
-  if (Number.isFinite(raw)) {
-    return Math.max(2, Math.round(width / Math.max(1, raw)));
+  if (Number.isFinite(raw) && raw >= 1) {
+    return Math.max(2, Math.round(width / raw));
   }
-  return Math.max(2, Math.round(Number(params.blockSize ?? 8)));
+  if (params.blocks == null) {
+    const legacy = Number(params.blockSize ?? NaN);
+    if (Number.isFinite(legacy) && legacy > 0) {
+      return Math.max(2, Math.round(legacy));
+    }
+  }
+  return Math.max(2, Math.round(width / 80));
 }
 
 /**

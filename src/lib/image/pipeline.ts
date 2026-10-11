@@ -37,12 +37,17 @@ export interface ProcessResult {
   underLimit: boolean;
 }
 
+/**
+ * El target es un cap de LADO MAYOR (igual que el decode): así un vertical
+ * con upscale no se inventa 3× píxeles por encima del cap.
+ */
 function fitSize(w: number, h: number, targetWidth: number, allowUpscale: boolean): { w: number; h: number } {
-  if (w === targetWidth) return { w, h };
+  const m = Math.max(w, h);
+  if (m === targetWidth) return { w, h };
   // Solo se reduce por defecto: ampliar inventa píxeles (opt-in explícito).
-  if (w > targetWidth || (w < targetWidth && allowUpscale)) {
-    const s = targetWidth / w;
-    return { w: targetWidth, h: Math.max(1, Math.round(h * s)) };
+  if (m > targetWidth || (m < targetWidth && allowUpscale)) {
+    const s = targetWidth / m;
+    return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
   }
   return { w, h };
 }
@@ -55,11 +60,13 @@ function fitSize(w: number, h: number, targetWidth: number, allowUpscale: boolea
 const FLAT_STYLE_IDS = new Set(["pixel-art", "dither", "ballpoint"]);
 
 /**
- * Estilos continuos: unsharp suave tras reducir recupera nitidez percibida.
- * Excluye blur (desenfocar lo recién enfocado no tiene sentido) y los
- * planos (el enfoque antes del mosaico/dither añade aspereza).
+ * Estilos continuos con textura real que se beneficia del enfoque tras
+ * reducir. Excluye blur (desenfocar lo recién enfocado no tiene sentido),
+ * ballpoint (el enfoque añade tinta y bytes justo donde más cuesta) y
+ * footer-fade/dither/pixel-art (el enfoque antes del tramado/mosaico solo
+ * añade aspereza).
  */
-const SHARPEN_STYLE_IDS = new Set(["grayscale", "duotone", "frosted", "ballpoint", "footer-fade"]);
+const SHARPEN_STYLE_IDS = new Set(["grayscale", "duotone", "frosted"]);
 
 /** Factor de reducción por ronda cuando no cabe en el límite. */
 const SCALE_STEP = 0.85;
@@ -91,8 +98,11 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
   }
 
   const renderAt = async (w: number, h: number): Promise<HTMLCanvasElement> => {
-    // resize progresivo desde el decode (nunca desde lo ya estilizado)
-    const resized = drawStepped(decoded.canvas, decoded.width, decoded.height, w, h);
+    // resize progresivo desde el decode (nunca desde lo ya estilizado).
+    // willReadFrequently en la creación: el getImageData de abajo lo necesita.
+    const resized = drawStepped(decoded.canvas, decoded.width, decoded.height, w, h, {
+      willReadFrequently: true,
+    });
     let srcData = resized.getContext("2d", { willReadFrequently: true })!.getImageData(0, 0, w, h);
     // unsharp solo si hubo re-muestreo real (1:1 no perdió nada)
     if (SHARPEN_STYLE_IDS.has(style.id) && (w !== decoded.width || h !== decoded.height)) {
@@ -122,10 +132,13 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
 
     onStage?.("compress");
     const primary = await tryFitAtScale(styledCanvas, output, maxBytes);
-    // PNG automático para estilos planos: si cabe, el lossless se ve mejor
-    // que el WebP degradado; si no cabe, cae al WebP de esta misma escala.
+    // PNG automático para estilos planos: solo si el WebP no resolvió bien
+    // (sin fit, o a calidad baja). Si el WebP ya entra a q≥0.8, el encode
+    // PNG extra (1-3s a 4K) no aporta nada.
     const pngAuto =
-      output === "image/webp" && FLAT_STYLE_IDS.has(style.id)
+      output === "image/webp" &&
+      FLAT_STYLE_IDS.has(style.id) &&
+      (!primary || primary.quality < 0.8)
         ? await tryFitAtScale(styledCanvas, "image/png", maxBytes)
         : null;
     const chosen = pngAuto ?? primary;
@@ -159,27 +172,36 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
   // la UI lo marca con underLimit=false en vez de fallar en silencio).
   onStage?.("compress");
   const mime = await resolveMime(output);
-  const flat = mime === "image/jpeg" && lastCanvas ? flattenAlpha(lastCanvas) : lastCanvas!;
-  const fallback =
-    (await encodeCanvas(flat, mime, 0.3)) ?? (await encodeCanvas(flat, "image/jpeg", 0.5));
-  if (!fallback) throw new Error("No se pudo comprimir bajo el límite.");
+  const last = lastCanvas!;
+  // El retry a JPEG siempre aplana: toBlob a JPEG descarta el alpha sobre
+  // negro y aquí el mime puede ser PNG (con alpha) aunque el retry sea JPEG.
+  const forMime = mime === "image/jpeg" ? flattenAlpha(last) : last;
+  let fbBlob = await encodeCanvas(forMime, mime, 0.3);
+  let fbMime: string = mime;
+  let fbQuality = 0.3;
+  if (!fbBlob) {
+    fbBlob = await encodeCanvas(flattenAlpha(last), "image/jpeg", 0.5);
+    fbMime = "image/jpeg";
+    fbQuality = 0.5;
+  }
+  if (!fbBlob) throw new Error("No se pudo comprimir bajo el límite.");
   onStage?.("done");
-  const url = URL.createObjectURL(fallback);
+  const url = URL.createObjectURL(fbBlob);
   return {
-    blob: fallback,
+    blob: fbBlob,
     url,
     width: lastW,
     height: lastH,
     requestedWidth: base.w,
     requestedHeight: base.h,
-    size: fallback.size,
-    mime: fallback.type,
-    quality: 0.3,
+    size: fbBlob.size,
+    mime: fbMime,
+    quality: fbQuality,
     style,
     originalWidth: decoded.width,
     originalHeight: decoded.height,
     originalSize: decoded.originalSize,
     detectedMime: decoded.detectedMime,
-    underLimit: fallback.size <= maxBytes,
+    underLimit: fbBlob.size <= maxBytes,
   };
 }

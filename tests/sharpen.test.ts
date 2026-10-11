@@ -62,4 +62,20 @@ describe("unsharpMask", () => {
     const input = hardEdge();
     expect(Array.from(unsharpMask(input).data)).toEqual(Array.from(unsharpMask(input).data));
   });
+
+  test("con transparencia devuelve copia intacta (sin halo oscuro)", () => {
+    const img = hardEdge();
+    img.data[3] = 0; // un píxel transparente: el blur sangraría negro
+    const out = unsharpMask(img);
+    expect(out).not.toBe(img);
+    expect(Array.from(out.data)).toEqual(Array.from(img.data));
+  });
+
+  test("alpha casi opaco (>=250) sí enfoca", () => {
+    const img = hardEdge();
+    for (let i = 3; i < img.data.length; i += 4) img.data[i] = 250;
+    const out = unsharpMask(img, 0.5);
+    const right = (4 * 16 + 8) * 4;
+    expect(out.data[right]).toBeGreaterThan(200);
+  });
 });

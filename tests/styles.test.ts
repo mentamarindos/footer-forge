@@ -137,6 +137,13 @@ describe("densidad proporcional al ancho", () => {
     expect(resolvePixelBlock({ blocks: 80, blockSize: 8 }, 640)).toBe(8);
   });
 
+  test("resolvePixelBlock: valores corruptos caen al default (80 bloques)", () => {
+    expect(resolvePixelBlock({ blocks: 0 }, 640)).toBe(8);
+    expect(resolvePixelBlock({ blocks: -5 }, 640)).toBe(8);
+    expect(resolvePixelBlock({ blocks: "roto" }, 640)).toBe(8);
+    expect(resolvePixelBlock({}, 640)).toBe(8);
+  });
+
   test("blocks equivalentes dan bloques uniformes (4 bloques en 32px = 8px)", async () => {
     const out = await getStyle("pixel-art").apply(horizontalGradient(32, 32), {
       blocks: 4,
@@ -157,6 +164,8 @@ describe("densidad proporcional al ancho", () => {
   test("resolveFrostTile: 32 teselas a 640px = 20px; legacy intacto", () => {
     expect(resolveFrostTile({ tiles: 32 }, 640)).toBe(20);
     expect(resolveFrostTile({ tileSize: 20 }, 100)).toBe(20);
+    expect(resolveFrostTile({ tiles: 0 }, 640)).toBe(20);
+    expect(resolveFrostTile({}, 640)).toBe(20);
   });
 
   test("resolveSpacing escala con el ancho con mínimo 2", () => {

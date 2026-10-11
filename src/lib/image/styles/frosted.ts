@@ -8,14 +8,22 @@ function smooth(a: number, b: number, t: number): number {
 
 /**
  * Teselas proporcionales al ancho (igual que pixel-art).
- * Acepta el `tileSize` legacy (px absolutos) para params guardados viejos.
+ * Acepta el `tileSize` legacy (px absolutos) para params guardados viejos
+ * (la migración del store ya los convierte; esto es defensa en profundidad).
+ * Valores corruptos caen al default, nunca a 1 tesela.
  */
 export function resolveFrostTile(params: StyleParams, width: number): number {
   const raw = Number(params.tiles ?? NaN);
-  if (Number.isFinite(raw)) {
-    return Math.max(4, Math.round(width / Math.max(1, raw)));
+  if (Number.isFinite(raw) && raw >= 1) {
+    return Math.max(4, Math.round(width / raw));
   }
-  return Math.max(4, Math.round(Number(params.tileSize ?? 20)));
+  if (params.tiles == null) {
+    const legacy = Number(params.tileSize ?? NaN);
+    if (Number.isFinite(legacy) && legacy > 0) {
+      return Math.max(4, Math.round(legacy));
+    }
+  }
+  return Math.max(4, Math.round(width / 32));
 }
 
 /**

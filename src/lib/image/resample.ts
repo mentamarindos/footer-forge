@@ -21,20 +21,32 @@ export function planSteps(fromW: number, fromH: number, toW: number, toH: number
   if (w === tW && h === tH) return [{ w: tW, h: tH }];
 
   const steps: StepSize[] = [];
-  while (w / 2 >= tW && h / 2 >= tH) {
-    w = Math.round(w / 2);
-    h = Math.round(h / 2);
+  // Cada lado baja por su cuenta: con `&&` un panorama alargado frenaba el
+  // lado largo en un salto de ~2× cuando el corto ya no podía seguir.
+  while (w / tW >= 2 || h / tH >= 2) {
+    // Nunca baja de 1px por lado (evita pasos degenerados en rarezas).
+    w = Math.max(1, Math.round(w / 2));
+    h = Math.max(1, Math.round(h / 2));
     steps.push({ w, h });
+    // Freno de seguridad ante redondeos que no convergen.
+    if (steps.length > 32) break;
   }
   const last = steps[steps.length - 1];
   if (!last || last.w !== tW || last.h !== tH) steps.push({ w: tW, h: tH });
   return steps;
 }
 
-function paintStep(target: HTMLCanvasElement, source: CanvasImageSource, w: number, h: number): void {
+function paintStep(
+  target: HTMLCanvasElement,
+  source: CanvasImageSource,
+  w: number,
+  h: number,
+  willReadFrequently: boolean
+): void {
   target.width = w;
   target.height = h;
-  const ctx = target.getContext("2d")!;
+  // El flag solo vale en la CREACIÓN del contexto: pasarlo después es no-op.
+  const ctx = target.getContext("2d", { willReadFrequently })!;
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(source, 0, 0, w, h);
@@ -49,14 +61,16 @@ export function drawStepped(
   fromW: number,
   fromH: number,
   toW: number,
-  toH: number
+  toH: number,
+  opts: { willReadFrequently?: boolean } = {}
 ): HTMLCanvasElement {
   const steps = planSteps(fromW, fromH, toW, toH);
+  const { willReadFrequently = false } = opts;
   let current: CanvasImageSource = source;
   let out = document.createElement("canvas");
   for (const s of steps) {
     const next = document.createElement("canvas");
-    paintStep(next, current, s.w, s.h);
+    paintStep(next, current, s.w, s.h, willReadFrequently);
     current = next;
     out = next;
   }

@@ -170,6 +170,46 @@ export function activeParams(s: { paramsByStyle: Record<string, StyleParams>; st
   return s.paramsByStyle[s.styleId] ?? getDefaultParams(s.styleId);
 }
 
+/**
+ * Migración de settings persistidos (testeable sin store).
+ * - v1 -> v2: params plano pasa a paramsByStyle.
+ * - v2 -> v3: blockSize/tileSize (px absolutos) pasan a blocks/tiles
+ *   (conteos proporcionales al ancho). Sin esto, los looks guardados
+ *   cambiarían de aspecto en silencio: el pipeline mezcla los defaults
+ *   nuevos encima y el fallback legacy del resolver nunca se ejecutaría.
+ */
+export function migrateForgeSettings(persisted: unknown, fromVersion: number): Record<string, unknown> {
+  const p = (persisted ?? {}) as Record<string, unknown>;
+  if (fromVersion < 2 && p["params"] && !p["paramsByStyle"]) {
+    const styleId = typeof p["styleId"] === "string" ? p["styleId"] : "pixel-art";
+    p["paramsByStyle"] = { [styleId]: p["params"] };
+    delete p["params"];
+  }
+  if (fromVersion < 3) {
+    const byStyle = p["paramsByStyle"] as Record<string, StyleParams> | undefined;
+    if (byStyle && typeof byStyle === "object") {
+      for (const [id, params] of Object.entries(byStyle)) {
+        if (!params || typeof params !== "object") continue;
+        if (id === "pixel-art") {
+          const px = Number(params["blockSize"] ?? NaN);
+          if (params["blocks"] == null && Number.isFinite(px) && px > 0) {
+            params["blocks"] = Math.min(320, Math.max(16, Math.round(640 / px)));
+          }
+          delete params["blockSize"];
+        }
+        if (id === "frosted") {
+          const px = Number(params["tileSize"] ?? NaN);
+          if (params["tiles"] == null && Number.isFinite(px) && px > 0) {
+            params["tiles"] = Math.min(128, Math.max(8, Math.round(640 / px)));
+          }
+          delete params["tileSize"];
+        }
+      }
+    }
+  }
+  return p;
+}
+
 function withStyleEntry(
   paramsByStyle: Record<string, StyleParams>,
   styleId: string
@@ -324,18 +364,9 @@ export const useForgeStore = create<ForgeState>()(
     }),
     {
       name: "footer-forge-settings",
-      version: 2,
+      version: 3,
       storage: safeStorage,
-      migrate: (persisted: unknown) => {
-        // v1 -> v2: params plano pasa a paramsByStyle
-        const p = (persisted ?? {}) as Record<string, unknown>;
-        if (p["params"] && !p["paramsByStyle"]) {
-          const styleId = typeof p["styleId"] === "string" ? p["styleId"] : "pixel-art";
-          p["paramsByStyle"] = { [styleId]: p["params"] };
-          delete p["params"];
-        }
-        return p;
-      },
+      migrate: (persisted: unknown, fromVersion: number) => migrateForgeSettings(persisted, fromVersion),
       // Solo settings serializables: nunca File, blob URLs, callbacks ni flags efímeros
       partialize: (s) => ({
         styleId: s.styleId,

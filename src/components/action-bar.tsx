@@ -13,6 +13,7 @@ export function ActionBar() {
   const maxBytes = useForgeStore((s) => s.maxBytes);
   const targetWidth = useForgeStore((s) => s.width);
   const upscale = useForgeStore((s) => s.upscale);
+  const format = useForgeStore((s) => s.format);
   const run = useForgeStore((s) => s.run);
   const download = useForgeStore((s) => s.download);
 
@@ -26,6 +27,8 @@ export function ActionBar() {
   const upscaled = result != null && upscale && result.originalWidth < result.requestedWidth;
   const lowQuality =
     result != null && result.mime !== "image/png" && result.quality <= 0.4;
+  // PNG-auto del pipeline: el usuario pidió WebP pero el lossless cupo mejor
+  const pngAuto = result != null && result.mime === "image/png" && format === "image/webp";
 
   return (
     <div className="grid gap-3">
@@ -49,10 +52,21 @@ export function ActionBar() {
               {formatBytes(result.size)}
             </Badge>
           </div>
-          {downscaled && (
+          {(downscaled || lowQuality) && (
             <p className="animate-fade-in text-[11px] text-muted-foreground">
-              Pedidos {result.requestedWidth}×{result.requestedHeight}px → reducidos a{" "}
-              {result.width}×{result.height}px para caber en {formatBytes(maxBytes)}.
+              {downscaled ? (
+                <>
+                  Pedidos {result.requestedWidth}×{result.requestedHeight}px →{" "}
+                  reducidos a {result.width}×{result.height}px
+                  {lowQuality ? <> a calidad q {result.quality.toFixed(2)}</> : null}{" "}
+                  para caber en {formatBytes(maxBytes)}.{" "}
+                </>
+              ) : (
+                <>
+                  Calidad q {result.quality.toFixed(2)} para caber en{" "}
+                  {formatBytes(maxBytes)}.{" "}
+                </>
+              )}
               Sube el límite o baja el ancho para más calidad.
             </p>
           )}
@@ -69,10 +83,9 @@ export function ActionBar() {
               (suavizado, sin detalle nuevo).
             </p>
           )}
-          {lowQuality && (
+          {pngAuto && (
             <p className="animate-fade-in text-[11px] text-muted-foreground">
-              Calidad q {result.quality.toFixed(2)} para caber en{" "}
-              {formatBytes(maxBytes)}. Sube el límite o baja el ancho para más calidad.
+              PNG sin pérdida: tu estilo de pocos colores cupo mejor así que en WebP.
             </p>
           )}
         </div>

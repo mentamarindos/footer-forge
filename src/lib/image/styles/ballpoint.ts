@@ -132,7 +132,7 @@ export const ballpointStyle: StyleDefinition = {
   name: "Ballpoint",
   description: "Dibujo a boli sobre papel: tramas de grabado duotono.",
   params: [
-    { key: "spacing", label: "Densidad de trazo", type: "slider", min: 2, max: 8, step: 1, defaultValue: 4, unit: "px" },
+    { key: "spacing", label: "Densidad de trazo", type: "slider", min: 2, max: 8, step: 1, defaultValue: 4 },
     { key: "contrast", label: "Contraste", type: "slider", min: 50, max: 200, step: 1, defaultValue: 120, unit: "%" },
     { key: "crosshatch", label: "Entrecruzado", type: "slider", min: 0, max: 100, step: 1, defaultValue: 70, unit: "%" },
     { key: "ink", label: "Tinta", type: "color", defaultValue: "#1e40a0" },

@@ -29,6 +29,15 @@ describe("planSteps (re-muestreo progresivo)", () => {
     ]);
   });
 
+  test("panorama alargado: cada lado baja por su cuenta", () => {
+    expect(planSteps(5000, 30, 640, 4)).toEqual([
+      { w: 2500, h: 15 },
+      { w: 1250, h: 8 },
+      { w: 625, h: 4 },
+      { w: 640, h: 4 },
+    ]);
+  });
+
   test("pasos monótonos que terminan en el destino", () => {
     for (const [fw, fh, tw, th] of [[3840, 2160, 480, 270], [1200, 675, 640, 360], [5000, 3000, 64, 38]] as Array<[number, number, number, number]>) {
       const steps = planSteps(fw, fh, tw, th);

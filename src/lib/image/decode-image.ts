@@ -1,6 +1,7 @@
 import { drawStepped } from "./resample";
 
-export interface ImageDecodeResult {  canvas: HTMLCanvasElement;
+export interface ImageDecodeResult {
+  canvas: HTMLCanvasElement;
   width: number;
   height: number;
   detectedMime: string;

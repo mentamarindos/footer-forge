@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { getDefaultParams } from "@/lib/image/styles";
-import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, MAX_PREVIEW_ZOOM, WIDTH_PRESETS, useForgeStore } from "@/store/use-forge-store";
+import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, MAX_PREVIEW_ZOOM, WIDTH_PRESETS, migrateForgeSettings, useForgeStore } from "@/store/use-forge-store";
 
 function fakeFile(name = "foto.png", size = 2048): File {
   return new File([new Uint8Array(size)], name, { type: "image/png" });
@@ -95,6 +95,55 @@ describe("forge store: configure", () => {
   });
 });
 
+describe("migrateForgeSettings", () => {
+  test("v2 -> v3 convierte blockSize/tileSize legacy a conteos", () => {
+    const out = migrateForgeSettings(
+      {
+        styleId: "pixel-art",
+        paramsByStyle: {
+          "pixel-art": { blockSize: 8, colors: 32 },
+          frosted: { tileSize: 20, frost: 45 },
+        },
+      },
+      2
+    );
+    const byStyle = out["paramsByStyle"] as Record<string, Record<string, unknown>>;
+    // 640/8 = 80 bloques, 640/20 = 32 teselas: mismo look que antes
+    expect(byStyle["pixel-art"]).toEqual({ blocks: 80, colors: 32 });
+    expect(byStyle["frosted"]).toEqual({ tiles: 32, frost: 45 });
+  });
+
+  test("no pisa conteos nuevos ni rompe entradas raras", () => {
+    const out = migrateForgeSettings(
+      {
+        paramsByStyle: {
+          "pixel-art": { blocks: 100, blockSize: 8 },
+          frosted: { tileSize: 0 },
+          blur: null,
+        },
+      },
+      2
+    );
+    const byStyle = out["paramsByStyle"] as Record<string, Record<string, unknown>>;
+    expect(byStyle["pixel-art"]).toEqual({ blocks: 100 });
+    expect(byStyle["frosted"]).toEqual({});
+    expect(byStyle["blur"]).toBeNull();
+  });
+
+  test("v1 -> v3 encadena ambas migraciones", () => {
+    const out = migrateForgeSettings({ styleId: "pixel-art", params: { blockSize: 16 } }, 1);
+    const byStyle = out["paramsByStyle"] as Record<string, Record<string, unknown>>;
+    expect(byStyle["pixel-art"]).toEqual({ blocks: 40 });
+    expect(out["params"]).toBeUndefined();
+  });
+
+  test("v3 no toca nada y null no rompe", () => {
+    const kept = { paramsByStyle: { "pixel-art": { blocks: 80 } } };
+    expect(migrateForgeSettings(kept, 3)).toBe(kept);
+    expect(migrateForgeSettings(null, 0)).toEqual({ paramsByStyle: undefined });
+  });
+});
+
 describe("forge store: acciones", () => {
   test("pickFile guarda archivo y genera URL, limpiando el resultado", () => {
     const s = useForgeStore.getState();
@@ -123,15 +172,15 @@ describe("forge store: acciones", () => {
   test("setStyle conserva los params de cada estilo", () => {
     const s = useForgeStore.getState();
     s.setStyle("pixel-art");
-    s.updateParam("blockSize", 32);
+    s.updateParam("blocks", 200);
     s.setStyle("grayscale");
     const next = useForgeStore.getState();
     expect(next.styleId).toBe("grayscale");
     expect(next.paramsByStyle["grayscale"]).toEqual({ contrast: 110 });
-    // al volver, pixel-art recuerda su blockSize
+    // al volver, pixel-art recuerda sus bloques
     next.setStyle("pixel-art");
     const back = useForgeStore.getState();
-    expect(back.paramsByStyle["pixel-art"]?.["blockSize"]).toBe(32);
+    expect(back.paramsByStyle["pixel-art"]?.["blocks"]).toBe(200);
   });
 
   test("setStyle ignora ids no disponibles", () => {
