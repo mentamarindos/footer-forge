@@ -6,6 +6,7 @@ import { Dropzone } from "@/components/dropzone";
 import { FooterArt } from "@/components/footer-art";
 import { OutputSettings } from "@/components/output-settings";
 import { PreviewMinimap } from "@/components/preview-minimap";
+import { ReprocessFab } from "@/components/reprocess-fab";
 import { StyleControls } from "@/components/style-controls";
 import { StylePicker } from "@/components/style-picker";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -195,6 +196,9 @@ export default function App() {
 
       {/* minimapa flotante para dimensionar el preview */}
       <PreviewMinimap />
+
+      {/* reprocesar flotante abajo-derecha */}
+      <ReprocessFab />
     </div>
   );
 }

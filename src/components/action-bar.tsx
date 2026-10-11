@@ -1,20 +1,18 @@
-import { CheckCircle2, Download, Loader2, RotateCw, TriangleAlert } from "lucide-react";
+import { CheckCircle2, Download, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormatBadge } from "@/components/format-badge";
 import { Badge } from "@/components/ui/badge";
 import { useForgeStore } from "@/store/use-forge-store";
 import { formatBytes } from "@/lib/utils";
 
-/** Exportación: badges del resultado + reprocesar/descargar + estado del límite. */
+/** Exportación: badges del resultado + descargar + estado del límite. */
 export function ActionBar() {
   const file = useForgeStore((s) => s.file);
   const result = useForgeStore((s) => s.result);
-  const processing = useForgeStore((s) => s.processing);
   const maxBytes = useForgeStore((s) => s.maxBytes);
   const targetWidth = useForgeStore((s) => s.width);
   const upscale = useForgeStore((s) => s.upscale);
   const format = useForgeStore((s) => s.format);
-  const run = useForgeStore((s) => s.run);
   const download = useForgeStore((s) => s.download);
 
   if (!file) return null;
@@ -91,14 +89,6 @@ export function ActionBar() {
         </div>
       )}
       <div className="grid gap-2">
-        <Button
-          onClick={() => void run()}
-          disabled={processing}
-          className="w-full transition-transform duration-150 active:scale-95"
-        >
-          {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCw className="h-4 w-4" />}
-          {result ? "Reprocesar" : "Procesar"}
-        </Button>
         <Button
           variant="secondary"
           onClick={download}
