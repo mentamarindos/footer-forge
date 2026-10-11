@@ -11,6 +11,7 @@ export function ActionBar() {
   const result = useForgeStore((s) => s.result);
   const processing = useForgeStore((s) => s.processing);
   const maxBytes = useForgeStore((s) => s.maxBytes);
+  const targetWidth = useForgeStore((s) => s.width);
   const run = useForgeStore((s) => s.run);
   const download = useForgeStore((s) => s.download);
 
@@ -19,6 +20,8 @@ export function ActionBar() {
   const downscaled =
     result != null &&
     (result.width < result.requestedWidth || result.height < result.requestedHeight);
+  // la foto manda: si es más chica que el preset, no se amplía (no inventa píxeles)
+  const sourceLimited = result != null && result.originalWidth < targetWidth;
 
   return (
     <div className="grid gap-3">
@@ -38,6 +41,13 @@ export function ActionBar() {
               Pedidos {result.requestedWidth}×{result.requestedHeight}px → reducidos a{" "}
               {result.width}×{result.height}px para caber en {formatBytes(maxBytes)}.
               Sube el límite o baja el ancho para más calidad.
+            </p>
+          )}
+          {sourceLimited && (
+            <p className="animate-fade-in text-[11px] text-muted-foreground">
+              Tu foto mide {result.originalWidth}px de ancho: no se amplía a{" "}
+              {targetWidth}px porque interpolar no crea calidad real. Usa una
+              foto más grande si necesitas 4K de verdad.
             </p>
           )}
         </div>
