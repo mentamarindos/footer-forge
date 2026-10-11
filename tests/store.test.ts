@@ -9,6 +9,7 @@ beforeEach(() => {
   const s = useForgeStore.getState();
   s.clearFile();
   s.setDark(false);
+  s.setUpscale(false);
   s.configure({});
 });
 
@@ -19,6 +20,7 @@ describe("forge store: estado inicial", () => {
     expect(s.width).toBe(DEFAULT_WIDTH);
     expect(s.maxBytes).toBe(DEFAULT_MAX_BYTES);
     expect(s.format).toBe("image/webp");
+    expect(s.upscale).toBe(false);
     expect(s.file).toBeNull();
     expect(s.result).toBeNull();
     expect(s.processing).toBe(false);
@@ -162,6 +164,8 @@ describe("forge store: acciones", () => {
     expect(next.previewWidth).toBe(900);
     s.setPreviewWidth(null);
     expect(useForgeStore.getState().previewWidth).toBeNull();
+    s.setUpscale(true);
+    expect(useForgeStore.getState().upscale).toBe(true);
     s.setPreviewZoom(0.5);
     expect(useForgeStore.getState().previewZoom).toBe(0.5);
     s.setPreviewBlur(false);

@@ -16,9 +16,11 @@ export function OutputSettings() {
   const width = useForgeStore((s) => s.width);
   const format = useForgeStore((s) => s.format);
   const maxBytes = useForgeStore((s) => s.maxBytes);
+  const upscale = useForgeStore((s) => s.upscale);
   const setWidth = useForgeStore((s) => s.setWidth);
   const setFormat = useForgeStore((s) => s.setFormat);
   const setMaxBytes = useForgeStore((s) => s.setMaxBytes);
+  const setUpscale = useForgeStore((s) => s.setUpscale);
 
   return (
     <div className="grid gap-3">
@@ -84,6 +86,33 @@ export function OutputSettings() {
           Para fotos usa WebP o JPEG.
         </p>
       )}
+      <div className="flex items-center justify-between gap-2 border-t border-border/50 pt-3">
+        <div className="grid gap-0.5">
+          <Label className="text-xs">Ampliar</Label>
+          <span className="text-[11px] leading-snug text-muted-foreground">
+            Suavizado, sin detalle nuevo
+          </span>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={upscale}
+          onClick={() => setUpscale(!upscale)}
+          title={upscale ? "No ampliar fotos chicas" : "Ampliar fotos chicas al preset"}
+          className={cn(
+            "relative h-5 w-9 shrink-0 rounded-full transition-colors duration-150",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            upscale ? "bg-primary" : "bg-muted-foreground/30"
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-150",
+              upscale ? "left-[18px]" : "left-0.5"
+            )}
+          />
+        </button>
+      </div>
       <div className="grid gap-1.5 border-t border-border/50 pt-3">
         <Label className="text-xs">Límite de peso</Label>
         <div className="grid grid-cols-4 gap-1 rounded-lg border bg-muted p-1" role="group" aria-label="Límite de peso">

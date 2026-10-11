@@ -12,6 +12,7 @@ export function ActionBar() {
   const processing = useForgeStore((s) => s.processing);
   const maxBytes = useForgeStore((s) => s.maxBytes);
   const targetWidth = useForgeStore((s) => s.width);
+  const upscale = useForgeStore((s) => s.upscale);
   const run = useForgeStore((s) => s.run);
   const download = useForgeStore((s) => s.download);
 
@@ -21,7 +22,7 @@ export function ActionBar() {
     result != null &&
     (result.width < result.requestedWidth || result.height < result.requestedHeight);
   // la foto manda: si es más chica que el preset, no se amplía (no inventa píxeles)
-  const sourceLimited = result != null && result.originalWidth < targetWidth;
+  const sourceLimited = result != null && !upscale && result.originalWidth < targetWidth;
 
   return (
     <div className="grid gap-3">

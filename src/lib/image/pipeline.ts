@@ -12,6 +12,8 @@ export interface ProcessOptions {
   maxBytes?: number;
   output?: "image/webp" | "image/jpeg" | "image/png";
   onStage?: (stage: ProcessStage) => void;
+  /** Permite ampliar (suavizado de alta calidad, sin detalle nuevo). */
+  allowUpscale?: boolean;
 }
 
 export interface ProcessResult {
@@ -33,10 +35,14 @@ export interface ProcessResult {
   underLimit: boolean;
 }
 
-function fitSize(w: number, h: number, targetWidth: number): { w: number; h: number } {
-  if (w <= targetWidth) return { w, h };
-  const s = targetWidth / w;
-  return { w: targetWidth, h: Math.max(1, Math.round(h * s)) };
+function fitSize(w: number, h: number, targetWidth: number, allowUpscale: boolean): { w: number; h: number } {
+  if (w === targetWidth) return { w, h };
+  // Solo se reduce por defecto: ampliar inventa píxeles (opt-in explícito).
+  if (w > targetWidth || (w < targetWidth && allowUpscale)) {
+    const s = targetWidth / w;
+    return { w: targetWidth, h: Math.max(1, Math.round(h * s)) };
+  }
+  return { w, h };
 }
 
 /** Pipeline completo: decode (cacheado) -> resize -> style -> compress */
@@ -48,6 +54,7 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
     maxBytes = 102_400,
     output = "image/webp",
     onStage,
+    allowUpscale = false,
   } = opts;
 
   const style = getStyle(styleId);
@@ -55,7 +62,7 @@ export async function processImage(file: File, opts: ProcessOptions = {}): Promi
   // decode capado al target: nunca se materializa más de lo necesario,
   // y el resultado se reutiliza entre runs del mismo archivo
   const decoded = await decodeCachedImage(file, targetWidth);
-  const { w, h } = fitSize(decoded.width, decoded.height, targetWidth);
+  const { w, h } = fitSize(decoded.width, decoded.height, targetWidth, allowUpscale);
 
   // resize base
   const base = document.createElement("canvas");

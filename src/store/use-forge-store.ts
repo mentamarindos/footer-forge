@@ -87,6 +87,9 @@ interface ForgeState {
   dark: boolean;
   setDark: (v: boolean) => void;
   toggleDark: () => void;
+  /** Permite ampliar fotos chicas al preset (suavizado, sin detalle nuevo). */
+  upscale: boolean;
+  setUpscale: (v: boolean) => void;
   run: () => Promise<void>;
   download: () => void;
 }
@@ -197,6 +200,7 @@ export const useForgeStore = create<ForgeState>()(
   previewZoom: MAX_PREVIEW_ZOOM,
   previewBlur: true,
   dark: initialDark(),
+  upscale: false,
 
   configure: (cfg) => {
     // merge defensivo: solo aplica lo provisto; conserva estilo/params/ajustes.
@@ -267,9 +271,10 @@ export const useForgeStore = create<ForgeState>()(
   setPreviewBlur: (previewBlur) => set({ previewBlur }),
   setDark: (dark) => set({ dark }),
   toggleDark: () => set((s) => ({ dark: !s.dark })),
+  setUpscale: (upscale) => set({ upscale }),
 
   run: async () => {
-    const { file, styleId, width, maxBytes, format, onProcessed, result: prev } = get();
+    const { file, styleId, width, maxBytes, format, upscale, onProcessed, result: prev } = get();
     const params = activeParams(get());
     if (!file) return;
     const id = ++runSeq;
@@ -281,6 +286,7 @@ export const useForgeStore = create<ForgeState>()(
         targetWidth: width,
         maxBytes,
         output: format,
+        allowUpscale: upscale,
         onStage: (stage) => {
           if (runSeq === id && stage !== "done") set({ stage });
         },
@@ -341,6 +347,7 @@ export const useForgeStore = create<ForgeState>()(
         previewWidth: s.previewWidth,
         previewZoom: s.previewZoom,
         previewBlur: s.previewBlur,
+        upscale: s.upscale,
         dark: s.dark,
       }),
     }
@@ -355,13 +362,14 @@ export function useAutoProcess(delay = 350) {
   const width = useForgeStore((s) => s.width);
   const format = useForgeStore((s) => s.format);
   const maxBytes = useForgeStore((s) => s.maxBytes);
+  const upscale = useForgeStore((s) => s.upscale);
   const run = useForgeStore((s) => s.run);
 
   useEffect(() => {
     if (!file) return;
     const t = setTimeout(() => void run(), delay);
     return () => clearTimeout(t);
-  }, [file, styleId, params, width, format, maxBytes, run, delay]);
+  }, [file, styleId, params, width, format, maxBytes, upscale, run, delay]);
 }
 
 export { SUPPORTED_INPUT_ACCEPT };
