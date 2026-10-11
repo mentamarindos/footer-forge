@@ -6,7 +6,7 @@ import { SUPPORTED_INPUT_ACCEPT } from "@/lib/image/decode-image";
 import { processImage, type ProcessResult } from "@/lib/image/pipeline";
 import { STYLE_LIST, getDefaultParams } from "@/lib/image/styles";
 import type { StyleParams } from "@/lib/image/styles/types";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatTimestamp } from "@/lib/utils";
 
 export type OutputFormat = "image/webp" | "image/jpeg" | "image/png";
 
@@ -389,7 +389,7 @@ export const useForgeStore = create<ForgeState>()(
     const base = file?.name.replace(/\.[^.]+$/, "") ?? "footer";
     const ext = result.mime === "image/png" ? "png" : result.mime === "image/jpeg" ? "jpg" : "webp";
     a.href = result.url;
-    a.download = `${base}-${result.style.id}.${ext}`;
+    a.download = `${base}_${formatTimestamp()}.${ext}`;
     a.click();
   },
     }),
