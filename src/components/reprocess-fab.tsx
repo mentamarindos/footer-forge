@@ -1,5 +1,5 @@
 import { Check, Loader2, RotateCw } from "lucide-react";
-import { useForgeStore } from "@/store/use-forge-store";
+import { buildRunKey, useForgeStore } from "@/store/use-forge-store";
 import { cn } from "@/lib/utils";
 
 /** Reprocesar flotante (abajo-derecha): spinner al procesar, check verde al listo. */
@@ -7,18 +7,23 @@ export function ReprocessFab() {
   const file = useForgeStore((s) => s.file);
   const result = useForgeStore((s) => s.result);
   const processing = useForgeStore((s) => s.processing);
+  const lastRunKey = useForgeStore((s) => s.lastRunKey);
+  const liveKey = useForgeStore((s) => buildRunKey(s));
   const run = useForgeStore((s) => s.run);
 
   if (!file) return null;
-  const ready = result != null && !processing;
+  // En manual (o durante el debounce del auto) los ajustes pueden ir por
+  // delante del último render: el check verde solo si todo coincide.
+  const stale = result != null && !processing && lastRunKey !== liveKey;
+  const ready = result != null && !processing && !stale;
 
   return (
     <button
       type="button"
       onClick={() => void run()}
       disabled={processing}
-      aria-label={processing ? "Procesando imagen" : "Reprocesar imagen"}
-      title={processing ? "Procesando…" : "Reprocesar"}
+      aria-label={processing ? "Procesando imagen" : stale ? "Reprocesar: hay cambios sin aplicar" : "Reprocesar imagen"}
+      title={processing ? "Procesando…" : stale ? "Cambios sin aplicar: pulsa para reprocesar" : "Reprocesar"}
       className={cn(
         "fixed bottom-4 right-4 z-50 inline-flex h-12 w-12 items-center justify-center rounded-full border bg-card/95 shadow-xl backdrop-blur",
         "transition-all duration-150 hover:-translate-y-0.5 active:scale-95",
@@ -26,7 +31,7 @@ export function ReprocessFab() {
         processing ? "cursor-wait opacity-90" : "cursor-pointer"
       )}
     >
-      <span key={processing ? "loading" : ready ? "ready" : "idle"} className="animate-pop block">
+      <span key={processing ? "loading" : ready ? "ready" : "stale"} className="animate-pop block">
         {processing ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         ) : ready ? (

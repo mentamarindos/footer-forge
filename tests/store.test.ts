@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { getDefaultParams } from "@/lib/image/styles";
-import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, MAX_PREVIEW_ZOOM, WIDTH_PRESETS, migrateForgeSettings, useForgeStore } from "@/store/use-forge-store";
+import { DEFAULT_MAX_BYTES, DEFAULT_PREVIEW_HEIGHT, DEFAULT_WIDTH, MAX_PREVIEW_ZOOM, WIDTH_PRESETS, buildRunKey, migrateForgeSettings, useForgeStore } from "@/store/use-forge-store";
 
 function fakeFile(name = "foto.png", size = 2048): File {
   return new File([new Uint8Array(size)], name, { type: "image/png" });
@@ -11,6 +11,7 @@ beforeEach(() => {
   s.clearFile();
   s.setDark(false);
   s.setUpscale(false);
+  s.setAutoProcess(true);
   s.configure({});
   // hermético: el store es singleton y los params arrastrarían entre tests
   useForgeStore.setState({
@@ -35,6 +36,8 @@ describe("forge store: estado inicial", () => {
     expect(s.previewZoom).toBe(MAX_PREVIEW_ZOOM);
     expect(s.previewBlur).toBe(true);
     expect(s.dark).toBe(false);
+    expect(s.autoProcess).toBe(true);
+    expect(s.lastRunKey).toBeNull();
     expect(s.availableStyles.length).toBe(8);
   });
 
@@ -92,6 +95,40 @@ describe("forge store: configure", () => {
       availableStyles: ["blur"],
     });
     expect(useForgeStore.getState().styleId).toBe("blur");
+  });
+});
+
+describe("buildRunKey", () => {
+  test("estable ante el mismo estado", () => {
+    const s = useForgeStore.getState();
+    expect(buildRunKey(s)).toBe(buildRunKey(s));
+  });
+
+  test("cambia con estilo, params, ancho, formato, límite y upscale", () => {
+    const s = useForgeStore.getState();
+    const base = buildRunKey(s);
+    s.setStyle("duotone");
+    expect(buildRunKey(useForgeStore.getState())).not.toBe(base);
+    const s2 = useForgeStore.getState();
+    s2.setStyle("pixel-art");
+    s2.updateParam("blocks", 160);
+    expect(buildRunKey(useForgeStore.getState())).not.toBe(base);
+  });
+
+  test("ignora ajustes que no afectan al output (preview, tema)", () => {
+    const s = useForgeStore.getState();
+    const base = buildRunKey(s);
+    s.setPreviewZoom(0.5);
+    s.setPreviewWidth(900);
+    s.toggleDark();
+    expect(buildRunKey(useForgeStore.getState())).toBe(base);
+  });
+
+  test("setAutoProcess alterna el modo", () => {
+    const s = useForgeStore.getState();
+    expect(s.autoProcess).toBe(true);
+    s.setAutoProcess(false);
+    expect(useForgeStore.getState().autoProcess).toBe(false);
   });
 });
 

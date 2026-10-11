@@ -90,6 +90,11 @@ interface ForgeState {
   /** Permite ampliar fotos chicas al preset (suavizado, sin detalle nuevo). */
   upscale: boolean;
   setUpscale: (v: boolean) => void;
+  /** Auto (default): reprocesa al cambiar ajustes. Manual: solo con el FAB. */
+  autoProcess: boolean;
+  setAutoProcess: (v: boolean) => void;
+  /** Clave de los ajustes con los que se generó `result` (null = sin correr). */
+  lastRunKey: string | null;
   run: () => Promise<void>;
   download: () => void;
 }
@@ -170,6 +175,27 @@ export function activeParams(s: { paramsByStyle: Record<string, StyleParams>; st
   return s.paramsByStyle[s.styleId] ?? getDefaultParams(s.styleId);
 }
 
+/** Clave estable de todo lo que afecta al output: si cambia, el result está obsoleto. */
+export function buildRunKey(s: {
+  fileKey: number;
+  styleId: string;
+  paramsByStyle: Record<string, StyleParams>;
+  width: number;
+  format: OutputFormat;
+  maxBytes: number;
+  upscale: boolean;
+}): string {
+  return JSON.stringify([
+    s.fileKey,
+    s.styleId,
+    activeParams(s),
+    s.width,
+    s.format,
+    s.maxBytes,
+    s.upscale,
+  ]);
+}
+
 /**
  * Migración de settings persistidos (testeable sin store).
  * - v1 -> v2: params plano pasa a paramsByStyle.
@@ -241,6 +267,8 @@ export const useForgeStore = create<ForgeState>()(
   previewBlur: true,
   dark: initialDark(),
   upscale: false,
+  autoProcess: true,
+  lastRunKey: null,
 
   configure: (cfg) => {
     // merge defensivo: solo aplica lo provisto; conserva estilo/params/ajustes.
@@ -274,6 +302,7 @@ export const useForgeStore = create<ForgeState>()(
       file: f,
       originalUrl: URL.createObjectURL(f),
       result: null,
+      lastRunKey: null,
       processing: true, // feedback inmediato, sin ventana muerta hasta el debounce
       fileKey: s.fileKey + 1,
     }));
@@ -284,7 +313,7 @@ export const useForgeStore = create<ForgeState>()(
     if (originalUrl) URL.revokeObjectURL(originalUrl);
     if (result) URL.revokeObjectURL(result.url);
     runSeq++;
-    set((s) => ({ file: null, originalUrl: null, result: null, processing: false, fileKey: s.fileKey + 1 }));
+    set((s) => ({ file: null, originalUrl: null, result: null, lastRunKey: null, processing: false, fileKey: s.fileKey + 1 }));
   },
 
   setStyle: (id) => {
@@ -312,12 +341,14 @@ export const useForgeStore = create<ForgeState>()(
   setDark: (dark) => set({ dark }),
   toggleDark: () => set((s) => ({ dark: !s.dark })),
   setUpscale: (upscale) => set({ upscale }),
+  setAutoProcess: (autoProcess) => set({ autoProcess }),
 
   run: async () => {
     const { file, styleId, width, maxBytes, format, upscale, onProcessed, result: prev } = get();
     const params = activeParams(get());
     if (!file) return;
     const id = ++runSeq;
+    const key = buildRunKey(get());
     set({ processing: true, stage: "decode" });
     try {
       const r = await processImage(file, {
@@ -337,7 +368,7 @@ export const useForgeStore = create<ForgeState>()(
       }
       set((s) => {
         if (s.result) URL.revokeObjectURL(s.result.url);
-        return { result: r, stage: "idle" as const };
+        return { result: r, lastRunKey: key, stage: "idle" as const };
       });
       onProcessed?.(r);
       // avisa solo en la transición a excedido (no spam al arrastrar sliders)
@@ -379,6 +410,7 @@ export const useForgeStore = create<ForgeState>()(
         previewZoom: s.previewZoom,
         previewBlur: s.previewBlur,
         upscale: s.upscale,
+        autoProcess: s.autoProcess,
         dark: s.dark,
       }),
     }
@@ -394,13 +426,14 @@ export function useAutoProcess(delay = 350) {
   const format = useForgeStore((s) => s.format);
   const maxBytes = useForgeStore((s) => s.maxBytes);
   const upscale = useForgeStore((s) => s.upscale);
+  const auto = useForgeStore((s) => s.autoProcess);
   const run = useForgeStore((s) => s.run);
 
   useEffect(() => {
-    if (!file) return;
+    if (!file || !auto) return;
     const t = setTimeout(() => void run(), delay);
     return () => clearTimeout(t);
-  }, [file, styleId, params, width, format, maxBytes, upscale, run, delay]);
+  }, [file, styleId, params, width, format, maxBytes, upscale, auto, run, delay]);
 }
 
 export { SUPPORTED_INPUT_ACCEPT };
