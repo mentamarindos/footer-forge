@@ -9,6 +9,8 @@ export interface StyleParamSlider {
   step: number;
   defaultValue: number;
   unit?: string;
+  /** Atajos de un toque (píldoras bajo el slider). Deben caer en [min, max]. */
+  presets?: number[];
 }
 
 export interface StyleParamSelect {

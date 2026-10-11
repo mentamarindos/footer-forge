@@ -71,6 +71,26 @@ describe("style registry", () => {
     expect(params["preset"]).toBe("ink-paper");
     expect(getDefaultParams("pixel-art")).toEqual(defaultParamsFor(getStyle("pixel-art")));
   });
+
+  test("los presets de sliders caen dentro de [min, max]", () => {
+    for (const s of STYLE_LIST) {
+      for (const p of s.params) {
+        if (p.type === "slider" && p.presets) {
+          expect(p.presets.length).toBeGreaterThan(0);
+          for (const v of p.presets) {
+            expect(v).toBeGreaterThanOrEqual(p.min);
+            expect(v).toBeLessThanOrEqual(p.max);
+          }
+        }
+      }
+    }
+    const tiles = getStyle("frosted").params.find((p) => p.key === "tiles");
+    expect(tiles?.type).toBe("slider");
+    if (tiles?.type === "slider") {
+      expect(tiles.max).toBe(256);
+      expect(tiles.presets).toEqual([16, 32, 64, 128, 256]);
+    }
+  });
 });
 
 describe("propiedades generales de los estilos", () => {

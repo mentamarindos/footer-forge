@@ -120,7 +120,7 @@ export const frostedStyle: StyleDefinition = {
   name: "Frosted Mosaic",
   description: "Vidrio esmerilado en teselas con resplandor radial cálido.",
   params: [
-    { key: "tiles", label: "Teselas a lo ancho", type: "slider", min: 8, max: 128, step: 2, defaultValue: 32 },
+    { key: "tiles", label: "Teselas a lo ancho", type: "slider", min: 8, max: 256, step: 2, defaultValue: 32, presets: [16, 32, 64, 128, 256] },
     { key: "frost", label: "Esmerilado", type: "slider", min: 0, max: 100, step: 1, defaultValue: 45, unit: "%" },
     { key: "glow", label: "Resplandor bordes", type: "slider", min: 0, max: 100, step: 1, defaultValue: 65, unit: "%" },
     { key: "warmth", label: "Calidez central", type: "slider", min: 0, max: 100, step: 1, defaultValue: 30, unit: "%" },

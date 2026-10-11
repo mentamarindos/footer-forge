@@ -35,6 +35,32 @@ export function StyleControls() {
                 value={[Number(current)]}
                 onValueChange={([v]) => updateParam(p.key, v)}
               />
+              {p.presets && p.presets.length > 0 && (
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label={`${p.label}: valores rápidos`}>
+                  {p.presets.map((v) => {
+                    const isActive = Number(current) === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        aria-pressed={isActive}
+                        title={`${p.label}: ${v}${p.unit ?? ""}`}
+                        onClick={() => updateParam(p.key, v)}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 font-mono text-[11px] font-medium transition-all duration-150",
+                          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                          "active:scale-95",
+                          isActive
+                            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                            : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        )}
+                      >
+                        {v}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         }
